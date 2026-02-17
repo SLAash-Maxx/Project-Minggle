@@ -1,23 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Add this for Firestore
+import 'dart:async';
+import 'profile_picture_screen.dart';
 
 class OTPScreen extends StatefulWidget {
   final String phoneNumber;
-  const OTPScreen({super.key, required this.phoneNumber});
+  final String verificationId;
+  // Added these parameters to receive profile data from previous screens
+  final String? userName;
+  final String? birthday;
+  final String? gender;
+  final List<String>? selectedHobbies;
+
+  const OTPScreen({
+    super.key,
+    required this.phoneNumber,
+    required this.verificationId,
+    this.userName,
+    this.birthday,
+    this.gender,
+    this.selectedHobbies,
+  });
 
   @override
   State<OTPScreen> createState() => _OTPScreenState();
 }
 
 class _OTPScreenState extends State<OTPScreen> {
-  // OTP  6 controllers 6 focus nodes
   final List<TextEditingController> _controllers = List.generate(
     6,
     (index) => TextEditingController(),
   );
   final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
 
+  Timer? _timer;
+  int _start = 59;
+  bool _canResend = false;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
   @override
   void dispose() {
+    _timer?.cancel();
     for (var controller in _controllers) {
       controller.dispose();
     }
@@ -27,9 +58,101 @@ class _OTPScreenState extends State<OTPScreen> {
     super.dispose();
   }
 
-  void _nextField(String value, int index) {
-    if (value.length == 1 && index < 5) {
-      _focusNodes[index + 1].requestFocus();
+  void _startTimer() {
+    setState(() {
+      _start = 59;
+      _canResend = false;
+    });
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_start == 0) {
+        setState(() {
+          _timer?.cancel();
+          _canResend = true;
+        });
+      } else {
+        setState(() {
+          _start--;
+        });
+      }
+    });
+  }
+
+  Future<void> _verifyOTP() async {
+    String otp = _controllers.map((e) => e.text).join();
+
+    if (otp.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter the full 6-digit code.")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: widget.verificationId,
+        smsCode: otp,
+      );
+
+      // Sign in the user
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(credential);
+      User? user = userCredential.user;
+
+      if (user != null && mounted) {
+        // Save user profile data to Firestore
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'uid': user.uid,
+          'phoneNumber': widget.phoneNumber,
+          'name': widget.userName,
+          'birthday': widget.birthday,
+          'gender': widget.gender,
+          'hobbies': widget.selectedHobbies,
+          'profileCompleted': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+        setState(() => _isLoading = false);
+
+        // Navigate to Profile Picture Screen
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfilePictureScreen()),
+          (route) => false,
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      setState(() => _isLoading = false);
+      String errorMessage = "Invalid OTP. Please try again.";
+      if (e.code == 'invalid-verification-code') {
+        errorMessage = "The code you entered is incorrect.";
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    } catch (e) {
+      setState(() => _isLoading = false);
+      print("Error: $e");
+    }
+  }
+
+  void _onChanged(String value, int index) {
+    if (value.isNotEmpty) {
+      if (index < 5) {
+        _focusNodes[index + 1].requestFocus();
+      } else {
+        _focusNodes[index].unfocus();
+      }
+    }
+  }
+
+  void _handleKeyEvent(RawKeyEvent event, int index) {
+    if (event is RawKeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.backspace) {
+      if (_controllers[index].text.isEmpty && index > 0) {
+        _focusNodes[index - 1].requestFocus();
+      }
     }
   }
 
@@ -46,7 +169,7 @@ class _OTPScreenState extends State<OTPScreen> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 25),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -61,56 +184,71 @@ class _OTPScreenState extends State<OTPScreen> {
             const SizedBox(height: 10),
             Text(
               "Enter the 6-digit code we sent to\n${widget.phoneNumber}",
-              style: const TextStyle(color: Colors.grey, fontSize: 16),
+              style: const TextStyle(
+                color: Colors.grey,
+                fontSize: 16,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 40),
 
-            // OTP Input Fields
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List.generate(6, (index) {
-                return SizedBox(
-                  width: 45,
-                  child: TextField(
-                    controller: _controllers[index],
-                    focusNode: _focusNodes[index],
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    maxLength: 1,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    decoration: InputDecoration(
-                      counterText: "",
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(10),
+                return RawKeyboardListener(
+                  focusNode: FocusNode(),
+                  onKey: (event) => _handleKeyEvent(event, index),
+                  child: SizedBox(
+                    width: 52,
+                    height: 65,
+                    child: TextField(
+                      controller: _controllers[index],
+                      focusNode: _focusNodes[index],
+                      textAlign: TextAlign.center,
+                      keyboardType: TextInputType.number,
+                      maxLength: 1,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xFFFF4D6D)),
-                        borderRadius: BorderRadius.circular(10),
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(
+                        counterText: "",
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.grey,
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Color(0xFFFF4D6D),
+                            width: 2.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFF333333),
                       ),
+                      onChanged: (value) => _onChanged(value, index),
                     ),
-                    onChanged: (value) => _nextField(value, index),
                   ),
                 );
               }),
             ),
 
             const SizedBox(height: 30),
-
-            // Resend Code Option
             Center(
               child: TextButton(
-                onPressed: () {
-                  // Resend OTP logic here
-                },
-                child: const Text(
-                  "Didn't receive code? Resend",
+                onPressed: _canResend ? () => _startTimer() : null,
+                child: Text(
+                  _canResend
+                      ? "Didn't receive code? Resend"
+                      : "Resend code in 0:${_start.toString().padLeft(2, '0')}",
                   style: TextStyle(
-                    color: Color(0xFFFF4D6D),
+                    color: _canResend ? const Color(0xFFFF4D6D) : Colors.grey,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -119,7 +257,6 @@ class _OTPScreenState extends State<OTPScreen> {
 
             const Spacer(),
 
-            // Finish/Verify Button
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -130,69 +267,27 @@ class _OTPScreenState extends State<OTPScreen> {
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                onPressed: () {
-                  String otp = _controllers.map((e) => e.text).join();
-                  if (otp.length == 6) {
-                    // Firebase Verify logic
-                    _showSuccessDialog();
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Please enter the full 6-digit code."),
+                onPressed: _isLoading ? null : _verifyOTP,
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        "Verify & Finish",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    );
-                  }
-                },
-                child: const Text(
-                  "Verify & Finish",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
               ),
             ),
             const SizedBox(height: 50),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF333333),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.favorite, color: Color(0xFFFF4D6D), size: 60),
-            const SizedBox(height: 20),
-            const Text(
-              "Account Created!",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              "Welcome to Minggle. Your journey starts here.",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 25),
-            ElevatedButton(
-              onPressed: () {
-                // Navigate to Main App / Home Screen
-              },
-              child: const Text("Let's Go"),
-            ),
           ],
         ),
       ),

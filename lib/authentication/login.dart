@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'otp_verification_screen.dart';
+import 'otp_screen.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,11 +14,11 @@ class _LoginPageState extends State<LoginPage> {
   late VideoPlayerController _controller;
   final TextEditingController _phoneController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    // Path updated to use minggle.mp4 as requested
     _controller = VideoPlayerController.asset("assets/videos/minggle.mp4")
       ..initialize().then((_) {
         _controller.play();
@@ -34,32 +34,38 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  // Firebase Phone Auth logic
   void _sendOTP() async {
     String phoneNumber = _phoneController.text.trim();
 
     if (phoneNumber.isNotEmpty) {
+      setState(() => _isLoading = true);
+
       await _auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         verificationCompleted: (PhoneAuthCredential credential) async {
           await _auth.signInWithCredential(credential);
         },
         verificationFailed: (FirebaseAuthException e) {
+          setState(() => _isLoading = false);
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text("Error: ${e.message}")));
         },
         codeSent: (String verificationId, int? resendToken) {
-          // Navigating to verification screen
+          setState(() => _isLoading = false);
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  OTPVerificationScreen(verificationId: verificationId),
+              builder: (context) => OTPScreen(
+                phoneNumber: phoneNumber,
+                verificationId: verificationId,
+              ),
             ),
           );
         },
-        codeAutoRetrievalTimeout: (String verificationId) {},
+        codeAutoRetrievalTimeout: (String verificationId) {
+          if (mounted) setState(() => _isLoading = false);
+        },
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -73,14 +79,13 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background video player
           SizedBox.expand(
             child: _controller.value.isInitialized
                 ? VideoPlayer(_controller)
                 : Container(color: Colors.black),
           ),
-          // Dark overlay for readability
-          Container(color: Colors.black.withOpacity(0.5)),
+          // Updated from withOpacity to .withValues for latest Flutter
+          Container(color: Colors.black.withValues(alpha: 0.5)),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -104,7 +109,8 @@ class _LoginPageState extends State<LoginPage> {
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.2),
+                    // Updated from withOpacity to .withValues
+                    fillColor: Colors.white.withValues(alpha: 0.2),
                     prefixIcon: const Icon(
                       Icons.phone,
                       color: Color(0xFFFF4D6D),
@@ -128,15 +134,24 @@ class _LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                    onPressed: _sendOTP, // Triggering the OTP process
-                    child: const Text(
-                      "Send OTP",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+                    onPressed: _isLoading ? null : _sendOTP,
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            "Send OTP",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
               ],

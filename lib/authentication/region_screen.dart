@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'otp_screen.dart';
 
 class RegionScreen extends StatefulWidget {
   const RegionScreen({super.key});
@@ -11,6 +13,127 @@ class _RegionScreenState extends State<RegionScreen> {
   String _selectedCountry = "Sri Lanka";
   String _countryCode = "+94";
   final TextEditingController _phoneController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // To track loading state
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  void _showSuccessDialog(String verificationId) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFFF4D6D), width: 3),
+                ),
+                child: const Icon(
+                  Icons.check,
+                  color: Color(0xFFFF4D6D),
+                  size: 50,
+                ),
+              ),
+              const SizedBox(height: 25),
+              const Text(
+                "Verify your number",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 15),
+              Text(
+                "We sent an OTP to\n$_countryCode ${_phoneController.text}",
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 35),
+              SizedBox(
+                width: 150,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4D6D),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OTPScreen(
+                          phoneNumber: "$_countryCode ${_phoneController.text}",
+                          verificationId: verificationId,
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    "OK",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _verifyPhone() async {
+    setState(() {
+      _isLoading = true; // Start loading
+    });
+
+    String phoneNumber = "$_countryCode${_phoneController.text.trim()}";
+
+    await _auth.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        setState(() => _isLoading = false);
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        setState(() => _isLoading = false); // Stop loading on error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? "Verification Failed")),
+        );
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        setState(() => _isLoading = false); // Stop loading when code is sent
+        _showSuccessDialog(verificationId);
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+        setState(() => _isLoading = false);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +167,6 @@ class _RegionScreenState extends State<RegionScreen> {
             ),
             const SizedBox(height: 40),
 
-            // Country/Region Selector
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
               decoration: BoxDecoration(
@@ -60,7 +182,7 @@ class _RegionScreenState extends State<RegionScreen> {
                     Icons.keyboard_arrow_down,
                     color: Colors.white,
                   ),
-                  items: <String>['Sri Lanka', 'India', 'USA', 'UK'].map((
+                  items: <String>['Sri Lanka', 'USA', 'India', 'UK'].map((
                     String value,
                   ) {
                     return DropdownMenuItem<String>(
@@ -74,10 +196,10 @@ class _RegionScreenState extends State<RegionScreen> {
                   onChanged: (newValue) {
                     setState(() {
                       _selectedCountry = newValue!;
-                      // Country Code
                       if (newValue == 'Sri Lanka') _countryCode = "+94";
                       if (newValue == 'USA') _countryCode = "+1";
                       if (newValue == 'India') _countryCode = "+91";
+                      if (newValue == 'UK') _countryCode = "+44";
                     });
                   },
                 ),
@@ -86,10 +208,8 @@ class _RegionScreenState extends State<RegionScreen> {
 
             const SizedBox(height: 15),
 
-            // Phone Number Input
             Row(
               children: [
-                // Country Code Display
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 15,
@@ -109,7 +229,6 @@ class _RegionScreenState extends State<RegionScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                // Phone Number Field
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -134,7 +253,6 @@ class _RegionScreenState extends State<RegionScreen> {
 
             const Spacer(),
 
-            // Continue Button
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -145,69 +263,42 @@ class _RegionScreenState extends State<RegionScreen> {
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                onPressed: () {
-                  if (_phoneController.text.length >= 9) {
-                    // Firebase OTP logic here
-                    _showSuccessBottomSheet();
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Please enter a valid phone number."),
+                // Disable button if loading
+                onPressed: _isLoading
+                    ? null
+                    : () {
+                        if (_phoneController.text.length >= 9) {
+                          _verifyPhone();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Please enter a valid phone number.",
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        "Continue",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    );
-                  }
-                },
-                child: const Text(
-                  "Continue",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
               ),
             ),
             const SizedBox(height: 50),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showSuccessBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1A1A1A),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(30),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.check_circle_outline,
-              color: Color(0xFFFF4D6D),
-              size: 80,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              "Verify your number",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              "We sent an OTP to $_countryCode ${_phoneController.text}",
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 30),
-            // Next Step: Navigate to OTP Verification Screen
           ],
         ),
       ),
