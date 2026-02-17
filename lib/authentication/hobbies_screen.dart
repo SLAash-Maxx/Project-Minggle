@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
-import 'region_screen.dart'; // Ensure this file exists in the same folder
+import 'region_screen.dart';
 
 class HobbiesScreen extends StatefulWidget {
-  const HobbiesScreen({super.key});
+  final String gender;
+  final String interest;
+
+  const HobbiesScreen({
+    super.key,
+    required this.gender,
+    required this.interest,
+  });
 
   @override
   State<HobbiesScreen> createState() => _HobbiesScreenState();
@@ -31,7 +38,6 @@ class _HobbiesScreenState extends State<HobbiesScreen> {
       if (_selectedHobbies.contains(hobby)) {
         _selectedHobbies.remove(hobby);
       } else {
-        // Removed the "length < 4" limit so you can select more
         _selectedHobbies.add(hobby);
       }
     });
@@ -39,7 +45,6 @@ class _HobbiesScreenState extends State<HobbiesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Logic: Enable button if 4 or more hobbies are selected
     bool canProceed = _selectedHobbies.length >= 4;
 
     return Scaffold(
@@ -74,7 +79,6 @@ class _HobbiesScreenState extends State<HobbiesScreen> {
               ),
             ),
             const SizedBox(height: 30),
-
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -115,7 +119,7 @@ class _HobbiesScreenState extends State<HobbiesScreen> {
                 },
               ),
             ),
-
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -127,13 +131,16 @@ class _HobbiesScreenState extends State<HobbiesScreen> {
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                // Correctly connects to RegionScreen if 4 or more are selected
                 onPressed: canProceed
                     ? () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const RegionScreen(),
+                            builder: (context) => RegionScreen(
+                              gender: widget.gender,
+                              interest: widget.interest,
+                              hobbies: List.from(_selectedHobbies),
+                            ),
                           ),
                         );
                       }
@@ -142,6 +149,7 @@ class _HobbiesScreenState extends State<HobbiesScreen> {
                   "Next",
                   style: TextStyle(
                     fontSize: 18,
+                    fontWeight: FontWeight.bold,
                     color: canProceed ? Colors.white : Colors.white38,
                   ),
                 ),

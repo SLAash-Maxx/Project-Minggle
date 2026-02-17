@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'profile_picture_screen.dart';
+import 'home_screen.dart';
 
 class OTPScreen extends StatefulWidget {
   final String phoneNumber;
@@ -11,6 +12,7 @@ class OTPScreen extends StatefulWidget {
   final String? userName;
   final String? birthday;
   final String? gender;
+  final String? interest;
   final List<String>? selectedHobbies;
 
   const OTPScreen({
@@ -20,6 +22,7 @@ class OTPScreen extends StatefulWidget {
     this.userName,
     this.birthday,
     this.gender,
+    this.interest,
     this.selectedHobbies,
   });
 
@@ -48,12 +51,8 @@ class _OTPScreenState extends State<OTPScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
-    for (var node in _focusNodes) {
-      node.dispose();
-    }
+    for (var controller in _controllers) controller.dispose();
+    for (var node in _focusNodes) node.dispose();
     super.dispose();
   }
 
@@ -69,25 +68,21 @@ class _OTPScreenState extends State<OTPScreen> {
           _canResend = true;
         });
       } else {
-        setState(() {
-          _start--;
-        });
+        setState(() => _start--);
       }
     });
   }
 
   Future<void> _verifyOTP() async {
     String otp = _controllers.map((e) => e.text).join();
-
     if (otp.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter the full 6-digit code.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Enter 6-digit code")));
       return;
     }
 
     setState(() => _isLoading = true);
-    debugPrint("DEBUG: Verification started...");
 
     try {
       PhoneAuthCredential credential = PhoneAuthProvider.credential(
@@ -95,16 +90,23 @@ class _OTPScreenState extends State<OTPScreen> {
         smsCode: otp,
       );
 
-      debugPrint("DEBUG: Signing in with credential...");
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithCredential(credential);
       User? user = userCredential.user;
-      debugPrint("DEBUG: User signed in: ${user?.uid}");
 
       if (user != null && mounted) {
-        debugPrint("DEBUG: Attempting to save to Firestore...");
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
 
-        try {
+        if (userDoc.exists) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            (route) => false,
+          );
+        } else {
           await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
@@ -114,22 +116,11 @@ class _OTPScreenState extends State<OTPScreen> {
                 'name': widget.userName ?? "New User",
                 'birthday': widget.birthday ?? "",
                 'gender': widget.gender ?? "",
+                'interest': widget.interest ?? "both",
                 'hobbies': widget.selectedHobbies ?? [],
                 'profileCompleted': false,
                 'createdAt': FieldValue.serverTimestamp(),
-              }, SetOptions(merge: true))
-              .timeout(const Duration(seconds: 10));
-
-          debugPrint("DEBUG: Firestore save successful");
-        } catch (firestoreError) {
-          debugPrint(
-            "DEBUG: Firestore Error (Likely Rules or Database ID): $firestoreError",
-          );
-        }
-
-        if (mounted) {
-          setState(() => _isLoading = false);
-          debugPrint("DEBUG: Navigating to ProfilePictureScreen");
+              }, SetOptions(merge: true));
 
           Navigator.pushAndRemoveUntil(
             context,
@@ -140,46 +131,11 @@ class _OTPScreenState extends State<OTPScreen> {
           );
         }
       }
-    } on FirebaseAuthException catch (e) {
-      setState(() => _isLoading = false);
-      debugPrint("DEBUG: Auth Exception: ${e.message}");
-      String errorMessage = "Invalid OTP. Please try again.";
-      if (e.code == 'invalid-verification-code') {
-        errorMessage = "The code you entered is incorrect.";
-      }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
     } catch (e) {
       setState(() => _isLoading = false);
-      debugPrint("DEBUG: General Exception: $e");
-
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const ProfilePictureScreen()),
-          (route) => false,
-        );
-      }
-    }
-  }
-
-  void _onChanged(String value, int index) {
-    if (value.isNotEmpty) {
-      if (index < 5) {
-        _focusNodes[index + 1].requestFocus();
-      } else {
-        _focusNodes[index].unfocus();
-      }
-    }
-  }
-
-  void _handleKeyEvent(RawKeyEvent event, int index) {
-    if (event is RawKeyDownEvent &&
-        event.logicalKey == LogicalKeyboardKey.backspace) {
-      if (_controllers[index].text.isEmpty && index > 0) {
-        _focusNodes[index - 1].requestFocus();
-      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Invalid OTP code!")));
     }
   }
 
@@ -210,24 +166,26 @@ class _OTPScreenState extends State<OTPScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              "Enter the 6-digit code we sent to\n${widget.phoneNumber}",
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
-                height: 1.5,
-              ),
+              "Enter the code sent to ${widget.phoneNumber}",
+              style: const TextStyle(color: Colors.grey, fontSize: 16),
             ),
             const SizedBox(height: 40),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List.generate(6, (index) {
-                return RawKeyboardListener(
-                  focusNode: FocusNode(),
-                  onKey: (event) => _handleKeyEvent(event, index),
-                  child: SizedBox(
-                    width: 52,
-                    height: 65,
+                return SizedBox(
+                  width: 50,
+                  height: 60,
+                  child: KeyboardListener(
+                    focusNode: FocusNode(),
+                    onKeyEvent: (event) {
+                      if (event is KeyDownEvent &&
+                          event.logicalKey == LogicalKeyboardKey.backspace) {
+                        if (_controllers[index].text.isEmpty && index > 0) {
+                          _focusNodes[index - 1].requestFocus();
+                        }
+                      }
+                    },
                     child: TextField(
                       controller: _controllers[index],
                       focusNode: _focusNodes[index],
@@ -236,36 +194,36 @@ class _OTPScreenState extends State<OTPScreen> {
                       maxLength: 1,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 26,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: InputDecoration(
                         counterText: "",
                         enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            color: Colors.grey,
-                            width: 1.5,
-                          ),
-                          borderRadius: BorderRadius.circular(15),
+                          borderSide: const BorderSide(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderSide: const BorderSide(
                             color: Color(0xFFFF4D6D),
-                            width: 2.5,
+                            width: 2,
                           ),
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         filled: true,
                         fillColor: const Color(0xFF333333),
                       ),
-                      onChanged: (value) => _onChanged(value, index),
+                      onChanged: (value) {
+                        if (value.isNotEmpty && index < 5) {
+                          _focusNodes[index + 1].requestFocus();
+                        }
+                      },
                     ),
                   ),
                 );
               }),
             ),
-
             const SizedBox(height: 30),
             Center(
               child: TextButton(
@@ -281,9 +239,7 @@ class _OTPScreenState extends State<OTPScreen> {
                 ),
               ),
             ),
-
             const Spacer(),
-
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -296,20 +252,13 @@ class _OTPScreenState extends State<OTPScreen> {
                 ),
                 onPressed: _isLoading ? null : _verifyOTP,
                 child: _isLoading
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
+                    ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
                         "Verify & Finish",
                         style: TextStyle(
+                          color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
                         ),
                       ),
               ),

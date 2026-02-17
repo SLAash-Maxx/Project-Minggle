@@ -37,15 +37,12 @@ class _GenderScreenState extends State<GenderScreen> {
               ),
             ),
             const SizedBox(height: 30),
-
-            _buildGenderOption("Man"),
+            _buildGenderOption("Male"),
             const SizedBox(height: 15),
-            _buildGenderOption("Woman"),
+            _buildGenderOption("Female"),
             const SizedBox(height: 15),
             _buildGenderOption("Other"),
-
             const Spacer(),
-
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -57,13 +54,14 @@ class _GenderScreenState extends State<GenderScreen> {
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                // Button is only enabled if a gender is selected
                 onPressed: _selectedGender != null
                     ? () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const InterestScreen(),
+                            builder: (context) => InterestScreen(
+                              gender: _selectedGender!.toLowerCase(),
+                            ),
                           ),
                         );
                       }

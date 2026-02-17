@@ -30,6 +30,32 @@ class _ProfilePictureScreenState extends State<ProfilePictureScreen> {
     }
   }
 
+  Future<void> _skipAndFinish() async {
+    setState(() => _isLoading = true);
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({'profileCompleted': true});
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            (route) => false,
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   Future<void> _uploadAndFinish() async {
     if (_image == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -64,9 +90,9 @@ class _ProfilePictureScreenState extends State<ProfilePictureScreen> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Upload failed: \${e.toString()}")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Upload failed: ${e.toString()}")));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -205,24 +231,14 @@ class _ProfilePictureScreenState extends State<ProfilePictureScreen> {
                     ? null
                     : () => _pickImage(ImageSource.gallery),
                 child: const Text(
-                  "Or choose from gallery",
+                  "Choose from gallery",
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),
             ),
             const SizedBox(height: 15),
             TextButton(
-              onPressed: _isLoading
-                  ? null
-                  : () {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HomeScreen(),
-                        ),
-                        (route) => false,
-                      );
-                    },
+              onPressed: _isLoading ? null : _skipAndFinish,
               child: const Text(
                 "Skip for now",
                 style: TextStyle(color: Colors.grey, fontSize: 16),

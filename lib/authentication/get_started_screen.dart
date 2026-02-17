@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'name_screen.dart'; // Import the NameScreen file
+import 'login_selection_screen.dart';
 
 class GetStartedScreen extends StatefulWidget {
   const GetStartedScreen({super.key});
@@ -40,7 +40,6 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                 : Container(color: Colors.black),
           ),
           Container(color: Colors.black.withOpacity(0.4)),
-
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -68,11 +67,10 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                     ),
                   ),
                   onPressed: () {
-                    // Navigate to the NameScreen when button is pressed
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const NameScreen(),
+                        builder: (context) => const LoginSelectionScreen(),
                       ),
                     );
                   },

@@ -31,100 +31,155 @@ class _HomeScreenState extends State<HomeScreen> {
     CollectionReference users = FirebaseFirestore.instance.collection('users');
     List<Map<String, dynamic>> dummyUsers = [
       {
-        'uid': 'clone1',
-        'name': 'Dilini',
-        'age': 22,
-        'profilePic':
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone2',
+        'uid': 'clone_b1',
         'name': 'Kasun',
         'age': 25,
+        'gender': 'male',
         'profilePic':
             'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000',
         'profileCompleted': true,
       },
       {
-        'uid': 'clone3',
+        'uid': 'clone_b2',
+        'name': 'Nuwan',
+        'age': 23,
+        'gender': 'male',
+        'profilePic':
+            'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000',
+        'profileCompleted': true,
+      },
+      {
+        'uid': 'clone_b3',
+        'name': 'Sahan',
+        'age': 24,
+        'gender': 'male',
+        'profilePic':
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000',
+        'profileCompleted': true,
+      },
+      {
+        'uid': 'clone_g1',
+        'name': 'Dilini',
+        'age': 22,
+        'gender': 'female',
+        'profilePic':
+            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000',
+        'profileCompleted': true,
+      },
+      {
+        'uid': 'clone_g2',
         'name': 'Pooja',
         'age': 21,
+        'gender': 'female',
         'profilePic':
             'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=1000',
         'profileCompleted': true,
       },
+      {
+        'uid': 'clone_g3',
+        'name': 'Ishani',
+        'age': 24,
+        'gender': 'female',
+        'profilePic':
+            'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=1000',
+        'profileCompleted': true,
+      },
+      {
+        'uid': 'clone_g4',
+        'name': 'Kavindi',
+        'age': 20,
+        'gender': 'female',
+        'profilePic':
+            'https://images.unsplash.com/photo-1531123897727-8f129e16fd06?q=80&w=1000',
+        'profileCompleted': true,
+      },
     ];
-
     for (var userData in dummyUsers) {
       await users.doc(userData['uid']).set(userData, SetOptions(merge: true));
     }
   }
 
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF1A1A1A),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          title: const Text(
-            "Logout",
-            style: TextStyle(
-              color: Color(0xFFFF4D6D),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: const Text(
-            "Are you sure you want to log out?",
-            style: TextStyle(color: Colors.white),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("No", style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4D6D),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () async {
-                Navigator.pop(context);
-                await FirebaseAuth.instance.signOut();
-              },
-              child: const Text("Yes", style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Future<void> _handleLike(String likedUserUid) async {
     if (currentUserId == "unknown") return;
-
     await FirebaseFirestore.instance
         .collection('users')
         .doc(currentUserId)
         .collection('liked_users')
         .doc(likedUserUid)
         .set({'likedAt': FieldValue.serverTimestamp()});
-
+    var matchCheck = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(likedUserUid)
+        .collection('liked_users')
+        .doc(currentUserId)
+        .get();
+    if (matchCheck.exists) _showMatchDialog();
     _pageController.nextPage(
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeInOut,
     );
   }
 
-  void _handleDislike() {
-    _pageController.nextPage(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
+  Future<void> _handleUnlike(String likedUserUid) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUserId)
+        .collection('liked_users')
+        .doc(likedUserUid)
+        .delete();
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Removed from likes")));
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        title: const Text("Logout", style: TextStyle(color: Color(0xFFFF4D6D))),
+        content: const Text(
+          "Are you sure?",
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("No"),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await FirebaseAuth.instance.signOut();
+            },
+            child: const Text("Yes"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showMatchDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("❤️", style: TextStyle(fontSize: 50)),
+            const Text(
+              "It's a Match!",
+              style: TextStyle(color: Colors.white, fontSize: 22),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Continue"),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -141,7 +196,6 @@ class _HomeScreenState extends State<HomeScreen> {
             color: Color(0xFFFF4D6D),
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
           ),
         ),
         actions: [
@@ -165,11 +219,9 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedItemColor: const Color(0xFFFF4D6D),
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.style), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: "Explore"),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Liked"),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble_outline),
             label: "Chats",
@@ -184,35 +236,79 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildDiscoverPage() {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('users').snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(color: Color(0xFFFF4D6D)),
-          );
+    return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .get(),
+      builder: (context, userSnapshot) {
+        String interest = "both";
+        if (userSnapshot.hasData && userSnapshot.data!.exists) {
+          var userData = userSnapshot.data!.data() as Map<String, dynamic>;
+          interest = userData['interest'] ?? "both";
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(
-            child: Text(
-              "No users found",
-              style: TextStyle(color: Colors.white),
-            ),
-          );
-        }
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('users')
+              .doc(currentUserId)
+              .collection('liked_users')
+              .snapshots(),
+          builder: (context, likedSnapshot) {
+            if (!likedSnapshot.hasData)
+              return const Center(child: CircularProgressIndicator());
 
-        var users = snapshot.data!.docs
-            .where((doc) => doc.id != currentUserId)
-            .toList();
+            // Collect IDs of already liked users
+            List<String> alreadyLikedUids = likedSnapshot.data!.docs
+                .map((doc) => doc.id)
+                .toList();
 
-        return PageView.builder(
-          controller: _pageController,
-          scrollDirection: Axis.vertical,
-          itemCount: users.length,
-          itemBuilder: (context, index) {
-            var userData = users[index].data();
-            return _buildUserCard(userData);
+            return StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting)
+                  return const Center(child: CircularProgressIndicator());
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
+                  return const Center(
+                    child: Text(
+                      "No users found",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
+
+                var users = snapshot.data!.docs.where((doc) {
+                  var data = doc.data() as Map<String, dynamic>;
+                  bool isNotMe = doc.id != currentUserId;
+                  bool isNotLiked = !alreadyLikedUids.contains(
+                    doc.id,
+                  ); // Filter out already liked users
+                  bool matchesInterest =
+                      interest == "both" ||
+                      (interest == "girls" && data['gender'] == "female") ||
+                      (interest == "boys" && data['gender'] == "male");
+                  return isNotMe && isNotLiked && matchesInterest;
+                }).toList();
+
+                if (users.isEmpty)
+                  return const Center(
+                    child: Text(
+                      "No more new people!",
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  );
+
+                return PageView.builder(
+                  controller: _pageController,
+                  scrollDirection: Axis.vertical,
+                  itemCount: users.length,
+                  itemBuilder: (context, index) => _buildUserCard(
+                    users[index].data() as Map<String, dynamic>,
+                  ),
+                );
+              },
+            );
           },
         );
       },
@@ -230,14 +326,13 @@ class _HomeScreenState extends State<HomeScreen> {
         if (!snapshot.hasData)
           return const Center(child: CircularProgressIndicator());
         var likedDocs = snapshot.data!.docs;
-        if (likedDocs.isEmpty) {
+        if (likedDocs.isEmpty)
           return const Center(
             child: Text(
               "No likes yet!",
               style: TextStyle(color: Colors.white70),
             ),
           );
-        }
 
         return GridView.builder(
           padding: const EdgeInsets.all(15),
@@ -259,33 +354,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (!userSnapshot.hasData)
                   return Container(color: Colors.grey[900]);
                 var data = userSnapshot.data!.data() as Map<String, dynamic>;
-                return Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    image: DecorationImage(
-                      image: NetworkImage(data['profilePic'] ?? ""),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                return GestureDetector(
+                  onLongPress: () => _handleUnlike(likedUid),
                   child: Container(
-                    alignment: Alignment.bottomLeft,
-                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.7),
-                        ],
+                      image: DecorationImage(
+                        image: NetworkImage(data['profilePic'] ?? ""),
+                        fit: BoxFit.cover,
                       ),
                     ),
-                    child: Text(
-                      data['name'] ?? "",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                    child: Container(
+                      alignment: Alignment.bottomLeft,
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.7),
+                          ],
+                        ),
+                      ),
+                      child: Text(
+                        data['name'] ?? "",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -299,7 +397,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildUserCard(Map<String, dynamic> userData) {
-    String userUid = userData['uid'] ?? "";
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -309,9 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(25),
                 image: DecorationImage(
-                  image: NetworkImage(
-                    userData['profilePic'] ?? "https://via.placeholder.com/400",
-                  ),
+                  image: NetworkImage(userData['profilePic'] ?? ""),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -344,22 +439,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const Row(
-                          children: [
-                            Icon(
-                              Icons.location_on,
-                              color: Color(0xFFFF4D6D),
-                              size: 18,
-                            ),
-                            SizedBox(width: 5),
-                            Text(
-                              "Sri Lanka",
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
+                        const Text(
+                          "Sri Lanka",
+                          style: TextStyle(color: Colors.white70, fontSize: 16),
                         ),
                       ],
                     ),
@@ -372,36 +454,25 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              GestureDetector(
-                onTap: _handleDislike,
-                child: _buildActionButton(Icons.close, Colors.amber, 60),
-              ),
-              GestureDetector(
-                onTap: () => _handleLike(userUid),
-                child: _buildActionButton(
-                  Icons.favorite,
-                  const Color(0xFFFF4D6D),
-                  80,
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.amber, size: 40),
+                onPressed: () => _pageController.nextPage(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeInOut,
                 ),
               ),
-              _buildActionButton(Icons.star, Colors.blue, 60),
+              IconButton(
+                icon: const Icon(
+                  Icons.favorite,
+                  color: Color(0xFFFF4D6D),
+                  size: 50,
+                ),
+                onPressed: () => _handleLike(userData['uid']),
+              ),
             ],
           ),
-          const SizedBox(height: 10),
         ],
       ),
-    );
-  }
-
-  Widget _buildActionButton(IconData icon, Color color, double size) {
-    return Container(
-      height: size,
-      width: size,
-      decoration: BoxDecoration(
-        color: const Color(0xFF333333),
-        shape: BoxShape.circle,
-      ),
-      child: Icon(icon, color: color, size: size * 0.5),
     );
   }
 }

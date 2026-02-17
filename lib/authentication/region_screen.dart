@@ -3,7 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'otp_screen.dart';
 
 class RegionScreen extends StatefulWidget {
-  const RegionScreen({super.key});
+  final String? gender;
+  final String? interest;
+  final List<String>? hobbies;
+
+  const RegionScreen({super.key, this.gender, this.interest, this.hobbies});
 
   @override
   State<RegionScreen> createState() => _RegionScreenState();
@@ -14,8 +18,6 @@ class _RegionScreenState extends State<RegionScreen> {
   String _countryCode = "+94";
   final TextEditingController _phoneController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  // To track loading state
   bool _isLoading = false;
 
   @override
@@ -86,6 +88,9 @@ class _RegionScreenState extends State<RegionScreen> {
                         builder: (context) => OTPScreen(
                           phoneNumber: "$_countryCode ${_phoneController.text}",
                           verificationId: verificationId,
+                          gender: widget.gender,
+                          interest: widget.interest,
+                          selectedHobbies: widget.hobbies,
                         ),
                       ),
                     );
@@ -108,10 +113,7 @@ class _RegionScreenState extends State<RegionScreen> {
   }
 
   void _verifyPhone() async {
-    setState(() {
-      _isLoading = true; // Start loading
-    });
-
+    setState(() => _isLoading = true);
     String phoneNumber = "$_countryCode${_phoneController.text.trim()}";
 
     await _auth.verifyPhoneNumber(
@@ -120,13 +122,13 @@ class _RegionScreenState extends State<RegionScreen> {
         setState(() => _isLoading = false);
       },
       verificationFailed: (FirebaseAuthException e) {
-        setState(() => _isLoading = false); // Stop loading on error
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.message ?? "Verification Failed")),
         );
       },
       codeSent: (String verificationId, int? resendToken) {
-        setState(() => _isLoading = false); // Stop loading when code is sent
+        setState(() => _isLoading = false);
         _showSuccessDialog(verificationId);
       },
       codeAutoRetrievalTimeout: (String verificationId) {
@@ -166,7 +168,6 @@ class _RegionScreenState extends State<RegionScreen> {
               style: TextStyle(color: Colors.grey, fontSize: 16),
             ),
             const SizedBox(height: 40),
-
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
               decoration: BoxDecoration(
@@ -205,9 +206,7 @@ class _RegionScreenState extends State<RegionScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 15),
-
             Row(
               children: [
                 Container(
@@ -250,9 +249,7 @@ class _RegionScreenState extends State<RegionScreen> {
                 ),
               ],
             ),
-
             const Spacer(),
-
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -263,7 +260,6 @@ class _RegionScreenState extends State<RegionScreen> {
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                // Disable button if loading
                 onPressed: _isLoading
                     ? null
                     : () {

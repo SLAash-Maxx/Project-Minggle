@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'hobbies_screen.dart';
 
 class InterestScreen extends StatefulWidget {
-  const InterestScreen({super.key});
+  final String gender;
+  const InterestScreen({super.key, required this.gender});
 
   @override
   State<InterestScreen> createState() => _InterestScreenState();
@@ -37,15 +38,12 @@ class _InterestScreenState extends State<InterestScreen> {
               ),
             ),
             const SizedBox(height: 30),
-
-            _buildOption("Girls"),
+            _buildOption("Female"),
             const SizedBox(height: 15),
-            _buildOption("Boys"),
+            _buildOption("Male"),
             const SizedBox(height: 15),
             _buildOption("Both"),
-
             const Spacer(),
-
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -62,7 +60,10 @@ class _InterestScreenState extends State<InterestScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const HobbiesScreen(),
+                            builder: (context) => HobbiesScreen(
+                              gender: widget.gender,
+                              interest: _selectedInterest!.toLowerCase(),
+                            ),
                           ),
                         );
                       }
