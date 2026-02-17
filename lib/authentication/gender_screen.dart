@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'interest_screen.dart'; // We will create this next
+import 'interest_screen.dart';
 
 class GenderScreen extends StatefulWidget {
   const GenderScreen({super.key});
@@ -15,7 +15,14 @@ class _GenderScreenState extends State<GenderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Column(
@@ -31,37 +38,45 @@ class _GenderScreenState extends State<GenderScreen> {
             ),
             const SizedBox(height: 30),
 
-            // Gender options
-            _buildGenderOption("Male"),
+            _buildGenderOption("Man"),
             const SizedBox(height: 15),
-            _buildGenderOption("Female"),
+            _buildGenderOption("Woman"),
             const SizedBox(height: 15),
             _buildGenderOption("Other"),
 
             const Spacer(),
+
             SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF4D6D),
+                  disabledBackgroundColor: Colors.white10,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                onPressed: () {
-                  if (_selectedGender != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const InterestScreen(),
-                      ),
-                    );
-                  }
-                },
-                child: const Text(
+                // Button is only enabled if a gender is selected
+                onPressed: _selectedGender != null
+                    ? () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const InterestScreen(),
+                          ),
+                        );
+                      }
+                    : null,
+                child: Text(
                   "Next",
-                  style: TextStyle(fontSize: 18, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: _selectedGender != null
+                        ? Colors.white
+                        : Colors.white38,
+                  ),
                 ),
               ),
             ),
@@ -83,16 +98,17 @@ class _GenderScreenState extends State<GenderScreen> {
           color: isSelected ? const Color(0xFFFF4D6D) : const Color(0xFF333333),
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: isSelected ? Colors.white : Colors.transparent,
-            width: 2,
+            color: isSelected ? Colors.white38 : Colors.transparent,
           ),
         ),
-        child: Text(
-          gender,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+        child: Center(
+          child: Text(
+            gender,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),

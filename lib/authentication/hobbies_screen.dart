@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'region_screen.dart'; // Ensure this file exists in the same folder
 
 class HobbiesScreen extends StatefulWidget {
   const HobbiesScreen({super.key});
@@ -8,7 +9,6 @@ class HobbiesScreen extends StatefulWidget {
 }
 
 class _HobbiesScreenState extends State<HobbiesScreen> {
-  // List of 12 hobbies
   final List<String> _hobbies = [
     "Music",
     "Travel",
@@ -31,23 +31,27 @@ class _HobbiesScreenState extends State<HobbiesScreen> {
       if (_selectedHobbies.contains(hobby)) {
         _selectedHobbies.remove(hobby);
       } else {
-        if (_selectedHobbies.length < 4) {
-          _selectedHobbies.add(hobby);
-        } else {
-          // You can change this to allow more, but you asked for 4
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("You can select up to 4 hobbies.")),
-          );
-        }
+        // Removed the "length < 4" limit so you can select more
+        _selectedHobbies.add(hobby);
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // Logic: Enable button if 4 or more hobbies are selected
+    bool canProceed = _selectedHobbies.length >= 4;
+
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Column(
@@ -63,12 +67,14 @@ class _HobbiesScreenState extends State<HobbiesScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              "Select at least 4 hobbies (${_selectedHobbies.length}/4)",
-              style: const TextStyle(color: Colors.grey, fontSize: 16),
+              "Select at least 4 hobbies (${_selectedHobbies.length} selected)",
+              style: TextStyle(
+                color: canProceed ? Colors.greenAccent : Colors.grey,
+                fontSize: 16,
+              ),
             ),
             const SizedBox(height: 30),
 
-            // Grid of hobbies
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -89,6 +95,11 @@ class _HobbiesScreenState extends State<HobbiesScreen> {
                             ? const Color(0xFFFF4D6D)
                             : const Color(0xFF333333),
                         borderRadius: BorderRadius.circular(15),
+                        border: Border.all(
+                          color: isSelected
+                              ? Colors.white38
+                              : Colors.transparent,
+                        ),
                       ),
                       child: Center(
                         child: Text(
@@ -111,18 +122,28 @@ class _HobbiesScreenState extends State<HobbiesScreen> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF4D6D),
+                  disabledBackgroundColor: Colors.white10,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                onPressed: _selectedHobbies.length == 4
+                // Correctly connects to RegionScreen if 4 or more are selected
+                onPressed: canProceed
                     ? () {
-                        // Navigate to Region selection screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const RegionScreen(),
+                          ),
+                        );
                       }
-                    : null, // Disable button if not exactly 4 selected
-                child: const Text(
+                    : null,
+                child: Text(
                   "Next",
-                  style: TextStyle(fontSize: 18, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: canProceed ? Colors.white : Colors.white38,
+                  ),
                 ),
               ),
             ),

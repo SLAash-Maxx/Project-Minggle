@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'hobbies_screen.dart'; // We will create this next
+import 'hobbies_screen.dart';
 
 class InterestScreen extends StatefulWidget {
   const InterestScreen({super.key});
@@ -15,7 +15,14 @@ class _InterestScreenState extends State<InterestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Column(
@@ -31,36 +38,44 @@ class _InterestScreenState extends State<InterestScreen> {
             ),
             const SizedBox(height: 30),
 
-            _buildInterestOption("Girls"),
+            _buildOption("Girls"),
             const SizedBox(height: 15),
-            _buildInterestOption("Boys"),
+            _buildOption("Boys"),
             const SizedBox(height: 15),
-            _buildInterestOption("Both"),
+            _buildOption("Both"),
 
             const Spacer(),
+
             SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF4D6D),
+                  disabledBackgroundColor: Colors.white10,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                onPressed: () {
-                  if (_selectedInterest != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const HobbiesScreen(),
-                      ),
-                    );
-                  }
-                },
-                child: const Text(
+                onPressed: _selectedInterest != null
+                    ? () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HobbiesScreen(),
+                          ),
+                        );
+                      }
+                    : null,
+                child: Text(
                   "Next",
-                  style: TextStyle(fontSize: 18, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: _selectedInterest != null
+                        ? Colors.white
+                        : Colors.white38,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -71,7 +86,7 @@ class _InterestScreenState extends State<InterestScreen> {
     );
   }
 
-  Widget _buildInterestOption(String interest) {
+  Widget _buildOption(String interest) {
     bool isSelected = _selectedInterest == interest;
     return GestureDetector(
       onTap: () => setState(() => _selectedInterest = interest),
@@ -81,6 +96,9 @@ class _InterestScreenState extends State<InterestScreen> {
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFFF4D6D) : const Color(0xFF333333),
           borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: isSelected ? Colors.white38 : Colors.transparent,
+          ),
         ),
         child: Center(
           child: Text(
