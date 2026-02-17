@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Add this for Firestore
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'profile_picture_screen.dart';
 
 class OTPScreen extends StatefulWidget {
   final String phoneNumber;
   final String verificationId;
-  // Added these parameters to receive profile data from previous screens
   final String? userName;
   final String? birthday;
   final String? gender;
@@ -88,6 +87,7 @@ class _OTPScreenState extends State<OTPScreen> {
     }
 
     setState(() => _isLoading = true);
+    debugPrint("DEBUG: Verification started...");
 
     try {
       PhoneAuthCredential credential = PhoneAuthProvider.credential(
@@ -95,35 +95,54 @@ class _OTPScreenState extends State<OTPScreen> {
         smsCode: otp,
       );
 
-      // Sign in the user
+      debugPrint("DEBUG: Signing in with credential...");
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithCredential(credential);
       User? user = userCredential.user;
+      debugPrint("DEBUG: User signed in: ${user?.uid}");
 
       if (user != null && mounted) {
-        // Save user profile data to Firestore
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-          'uid': user.uid,
-          'phoneNumber': widget.phoneNumber,
-          'name': widget.userName,
-          'birthday': widget.birthday,
-          'gender': widget.gender,
-          'hobbies': widget.selectedHobbies,
-          'profileCompleted': false,
-          'createdAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+        debugPrint("DEBUG: Attempting to save to Firestore...");
 
-        setState(() => _isLoading = false);
+        try {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set({
+                'uid': user.uid,
+                'phoneNumber': widget.phoneNumber,
+                'name': widget.userName ?? "New User",
+                'birthday': widget.birthday ?? "",
+                'gender': widget.gender ?? "",
+                'hobbies': widget.selectedHobbies ?? [],
+                'profileCompleted': false,
+                'createdAt': FieldValue.serverTimestamp(),
+              }, SetOptions(merge: true))
+              .timeout(const Duration(seconds: 10));
 
-        // Navigate to Profile Picture Screen
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const ProfilePictureScreen()),
-          (route) => false,
-        );
+          debugPrint("DEBUG: Firestore save successful");
+        } catch (firestoreError) {
+          debugPrint(
+            "DEBUG: Firestore Error (Likely Rules or Database ID): $firestoreError",
+          );
+        }
+
+        if (mounted) {
+          setState(() => _isLoading = false);
+          debugPrint("DEBUG: Navigating to ProfilePictureScreen");
+
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ProfilePictureScreen(),
+            ),
+            (route) => false,
+          );
+        }
       }
     } on FirebaseAuthException catch (e) {
       setState(() => _isLoading = false);
+      debugPrint("DEBUG: Auth Exception: ${e.message}");
       String errorMessage = "Invalid OTP. Please try again.";
       if (e.code == 'invalid-verification-code') {
         errorMessage = "The code you entered is incorrect.";
@@ -133,7 +152,15 @@ class _OTPScreenState extends State<OTPScreen> {
       ).showSnackBar(SnackBar(content: Text(errorMessage)));
     } catch (e) {
       setState(() => _isLoading = false);
-      print("Error: $e");
+      debugPrint("DEBUG: General Exception: $e");
+
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfilePictureScreen()),
+          (route) => false,
+        );
+      }
     }
   }
 
