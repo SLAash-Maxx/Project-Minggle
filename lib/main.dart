@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'core/theme/app_theme.dart';
-import 'screens/auth/phone_input_screen.dart';
+import 'authentication/get_started_screen.dart'; // Import the new starting screen
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Firebase report eke thiyena widiyata setup kirima
+  await Firebase.initializeApp();
   runApp(const MinggleApp());
 }
 
@@ -18,7 +18,8 @@ class MinggleApp extends StatelessWidget {
       title: 'Minggle',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: const PhoneInputScreen(), // Mulinnma yana screen eka
+      // Change this from PhoneInputScreen to GetStartedScreen
+      home: const GetStartedScreen(),
     );
   }
 }
