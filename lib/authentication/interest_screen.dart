@@ -31,9 +31,9 @@ class _InterestScreenState extends State<InterestScreen> {
             ),
             const SizedBox(height: 30),
 
-            _buildInterestOption("Girl"),
+            _buildInterestOption("Girls"),
             const SizedBox(height: 15),
-            _buildInterestOption("Boy"),
+            _buildInterestOption("Boys"),
             const SizedBox(height: 15),
             _buildInterestOption("Both"),
 
