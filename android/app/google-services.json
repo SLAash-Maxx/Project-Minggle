@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "63183199050",
+    "project_id": "minggle-54056",
+    "storage_bucket": "minggle-54056.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:63183199050:android:0e770680993fd9ca5c7fb3",
+        "android_client_info": {
+          "package_name": "com.minggle.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBK1YkN0vHys3McvM17g36lYZPyENiKOkk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
