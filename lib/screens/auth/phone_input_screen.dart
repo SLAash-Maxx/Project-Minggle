@@ -9,11 +9,9 @@ class PhoneInputScreen extends StatefulWidget {
 }
 
 class _PhoneInputScreenState extends State<PhoneInputScreen> {
-  // Phone number එක ගන්න controller එකක්
   final TextEditingController _phoneController = TextEditingController();
   bool _isLoading = false;
 
-  // Firebase Phone Auth Logic එක
   Future<void> _verifyPhoneNumber() async {
     String phoneNumber = _phoneController.text.trim();
 
@@ -30,7 +28,6 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         verificationCompleted: (PhoneAuthCredential credential) async {
-          // සමහර පෝන් වල auto-verify වෙනවා, එතකොට කෙලින්ම ලොගින් වෙනවා
           await FirebaseAuth.instance.signInWithCredential(credential);
         },
         verificationFailed: (FirebaseAuthException e) {
@@ -44,7 +41,6 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("OTP Sent Successfully!")),
           );
-          // ඊළඟට OTP ගහන screen එකට Verification ID එක අරන් යන්න මෙතනින් පුළුවන්
           print("Verification ID: $verificationId");
         },
         codeAutoRetrievalTimeout: (String verificationId) {
