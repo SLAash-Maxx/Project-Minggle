@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'core/theme/app_theme.dart';
-import 'authentication/get_started_screen.dart'; // Import the new starting screen
+import 'authentication/get_started_screen.dart';
+import 'authentication/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,8 +20,24 @@ class MinggleApp extends StatelessWidget {
       title: 'Minggle',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      // Change this from PhoneInputScreen to GetStartedScreen
-      home: const GetStartedScreen(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(color: Color(0xFFFF4D6D)),
+              ),
+            );
+          }
+
+          if (snapshot.hasData) {
+            return const HomeScreen();
+          }
+
+          return const GetStartedScreen();
+        },
+      ),
     );
   }
 }
