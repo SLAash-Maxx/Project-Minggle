@@ -61,7 +61,50 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Logic to handle Like
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1A1A1A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: const Text(
+            "Logout",
+            style: TextStyle(
+              color: Color(0xFFFF4D6D),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: const Text(
+            "Are you sure you want to log out?",
+            style: TextStyle(color: Colors.white),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("No", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF4D6D),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () async {
+                Navigator.pop(context);
+                await FirebaseAuth.instance.signOut();
+              },
+              child: const Text("Yes", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _handleLike(String likedUserUid) async {
     if (currentUserId == "unknown") return;
 
@@ -72,23 +115,17 @@ class _HomeScreenState extends State<HomeScreen> {
         .doc(likedUserUid)
         .set({'likedAt': FieldValue.serverTimestamp()});
 
-    // Move to next card
     _pageController.nextPage(
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeInOut,
     );
   }
 
-  // Logic to handle Dislike
   void _handleDislike() {
     _pageController.nextPage(
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeInOut,
     );
-  }
-
-  void _signOut() async {
-    await FirebaseAuth.instance.signOut();
   }
 
   @override
@@ -110,12 +147,14 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: _signOut,
+            onPressed: _showLogoutDialog,
           ),
         ],
       ),
       body: _selectedIndex == 0
           ? _buildDiscoverPage()
+          : _selectedIndex == 1
+          ? _buildLikedUsersPage()
           : const Center(
               child: Text("Coming Soon", style: TextStyle(color: Colors.white)),
             ),
@@ -180,9 +219,87 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildLikedUsersPage() {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .collection('liked_users')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData)
+          return const Center(child: CircularProgressIndicator());
+        var likedDocs = snapshot.data!.docs;
+        if (likedDocs.isEmpty) {
+          return const Center(
+            child: Text(
+              "No likes yet!",
+              style: TextStyle(color: Colors.white70),
+            ),
+          );
+        }
+
+        return GridView.builder(
+          padding: const EdgeInsets.all(15),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 15,
+            crossAxisSpacing: 15,
+            childAspectRatio: 0.8,
+          ),
+          itemCount: likedDocs.length,
+          itemBuilder: (context, index) {
+            String likedUid = likedDocs[index].id;
+            return FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(likedUid)
+                  .get(),
+              builder: (context, userSnapshot) {
+                if (!userSnapshot.hasData)
+                  return Container(color: Colors.grey[900]);
+                var data = userSnapshot.data!.data() as Map<String, dynamic>;
+                return Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    image: DecorationImage(
+                      image: NetworkImage(data['profilePic'] ?? ""),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  child: Container(
+                    alignment: Alignment.bottomLeft,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.7),
+                        ],
+                      ),
+                    ),
+                    child: Text(
+                      data['name'] ?? "",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildUserCard(Map<String, dynamic> userData) {
     String userUid = userData['uid'] ?? "";
-
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -197,13 +314,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   fit: BoxFit.cover,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
               ),
               child: Stack(
                 children: [
@@ -215,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withValues(alpha: 0.8),
+                          Colors.black.withOpacity(0.8),
                         ],
                       ),
                     ),
@@ -234,7 +344,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 5),
                         const Row(
                           children: [
                             Icon(
@@ -291,13 +400,6 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF333333),
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.2),
-            blurRadius: 15,
-            spreadRadius: 2,
-          ),
-        ],
       ),
       child: Icon(icon, color: color, size: size * 0.5),
     );
