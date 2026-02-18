@@ -43,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'age': 21,
         'gender': 'female',
         'profilePic':
-            'https://images.pexels.com/photos/19828527/pexels-photo-19828527/free-photo-of-jenna-ortega.jpeg?auto=compress&cs=tinysrgb&w=1000',
+            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDI5pK81dSiRboXduKuePLFAYmV5VmFaw0C_HlC0jWe8Og?e=l0RYGW',
         'profileCompleted': true,
       },
       {
@@ -52,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'age': 33,
         'gender': 'female',
         'profilePic':
-            'https://images.pexels.com/photos/13526131/pexels-photo-13526131.jpeg?auto=compress&cs=tinysrgb&w=1000',
+            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQA-qbzQh1fmQ7YEy6ONGGkjAQPMa6vdU1qf9LEmV3y2vYQ?e=QzOvbR',
         'profileCompleted': true,
       },
       {
@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'age': 29,
         'gender': 'female',
         'profilePic':
-            'https://images.pexels.com/photos/13526117/pexels-photo-13526117.jpeg?auto=compress&cs=tinysrgb&w=1000',
+            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDg9cZRuQA8SIgzYFvXmKg2AXHU7s0qv-LWUXqfR2fITMw?e=jL8oMs',
         'profileCompleted': true,
       },
       {
@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'age': 60,
         'gender': 'male',
         'profilePic':
-            'https://images.pexels.com/photos/13526115/pexels-photo-13526115.jpeg?auto=compress&cs=tinysrgb&w=1000',
+            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDpOoNTTGmpQpE4-AHATtjhASn6-VinOk2wvvGjU55HaOk?e=1M3seu',
         'profileCompleted': true,
       },
       {
@@ -79,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'age': 35,
         'gender': 'female',
         'profilePic':
-            'https://images.pexels.com/photos/13526114/pexels-photo-13526114.jpeg?auto=compress&cs=tinysrgb&w=1000',
+            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQD2VDvbAmpBTYAAkSt680mAASuh_G5F17m8IjzsMXgrbs8?e=GULArH',
         'profileCompleted': true,
       },
       {
@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'age': 37,
         'gender': 'female',
         'profilePic':
-            'https://images.pexels.com/photos/13526118/pexels-photo-13526118.jpeg?auto=compress&cs=tinysrgb&w=1000',
+            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQB20feX7qujQo8dmxtA7NUAAZAOM3OpNtqfS1m1nsjZex4?e=r4h26y',
         'profileCompleted': true,
       },
       {
@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'age': 61,
         'gender': 'male',
         'profilePic':
-            'https://images.pexels.com/photos/13526120/pexels-photo-13526120.jpeg?auto=compress&cs=tinysrgb&w=1000',
+            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQBMNHxZ2fFPQ5frJFs2yXrTAaEGdLwOY7-DcqAvZbyJpZo?e=9r5z2Z',
         'profileCompleted': true,
       },
       {
@@ -106,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'age': 37,
         'gender': 'female',
         'profilePic':
-            'https://images.pexels.com/photos/13526122/pexels-photo-13526122.jpeg?auto=compress&cs=tinysrgb&w=1000',
+            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQACLliYGic-T5ee0ndUbbNJAWS77qNGLvpGoqc5r8GBFDE?e=toCudR',
         'profileCompleted': true,
       },
       {
@@ -115,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'age': 30,
         'gender': 'female',
         'profilePic':
-            'https://images.pexels.com/photos/13526123/pexels-photo-13526123.jpeg?auto=compress&cs=tinysrgb&w=1000',
+            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDMMoIcY9Q7RokNYfiB__QyAXafNzGVuB0IMrw-6F4Yn7U?e=8beO0V',
         'profileCompleted': true,
       },
       {
@@ -124,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'age': 26,
         'gender': 'female',
         'profilePic':
-            'https://images.pexels.com/photos/13526125/pexels-photo-13526125.jpeg?auto=compress&cs=tinysrgb&w=1000',
+            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDlVwCj8CHBQK5KXISza_mTAYcrkqzMxsgxTUdQA6V1TQs?e=XkJ1SP',
         'profileCompleted': true,
       },
       {
@@ -133,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'age': 30,
         'gender': 'female',
         'profilePic':
-            'https://images.pexels.com/photos/13526126/pexels-photo-13526126.jpeg?auto=compress&cs=tinysrgb&w=1000',
+            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDR_g5OgmXsTaxMF6K4wRs1AfkcvCPi7kl-P3Kf9_DooDs?e=vdXeHm',
         'profileCompleted': true,
       },
     ];
