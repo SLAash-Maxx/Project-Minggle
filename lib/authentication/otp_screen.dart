@@ -36,7 +36,6 @@ class _OTPScreenState extends State<OTPScreen> {
     (index) => TextEditingController(),
   );
   final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
-
   Timer? _timer;
   int _start = 59;
   bool _canResend = false;
@@ -75,12 +74,7 @@ class _OTPScreenState extends State<OTPScreen> {
 
   Future<void> _verifyOTP() async {
     String otp = _controllers.map((e) => e.text).join();
-    if (otp.length < 6) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Enter 6-digit code")));
-      return;
-    }
+    if (otp.length < 6) return;
 
     setState(() => _isLoading = true);
 
@@ -131,11 +125,20 @@ class _OTPScreenState extends State<OTPScreen> {
           );
         }
       }
-    } catch (e) {
+    } on FirebaseAuthException catch (e) {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text("Invalid OTP code!")));
+      ).showSnackBar(SnackBar(content: Text(e.message ?? "Invalid OTP code!")));
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (FirebaseAuth.instance.currentUser != null) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false,
+        );
+      }
     }
   }
 
@@ -174,8 +177,8 @@ class _OTPScreenState extends State<OTPScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List.generate(6, (index) {
                 return SizedBox(
-                  width: 50,
-                  height: 60,
+                  width: 45,
+                  height: 55,
                   child: KeyboardListener(
                     focusNode: FocusNode(),
                     onKeyEvent: (event) {
@@ -194,7 +197,7 @@ class _OTPScreenState extends State<OTPScreen> {
                       maxLength: 1,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -202,22 +205,21 @@ class _OTPScreenState extends State<OTPScreen> {
                         counterText: "",
                         enabledBorder: OutlineInputBorder(
                           borderSide: const BorderSide(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderSide: const BorderSide(
                             color: Color(0xFFFF4D6D),
                             width: 2,
                           ),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         filled: true,
                         fillColor: const Color(0xFF333333),
                       ),
                       onChanged: (value) {
-                        if (value.isNotEmpty && index < 5) {
+                        if (value.isNotEmpty && index < 5)
                           _focusNodes[index + 1].requestFocus();
-                        }
                       },
                     ),
                   ),

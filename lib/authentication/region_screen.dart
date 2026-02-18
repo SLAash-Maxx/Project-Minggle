@@ -114,27 +114,43 @@ class _RegionScreenState extends State<RegionScreen> {
 
   void _verifyPhone() async {
     setState(() => _isLoading = true);
-    String phoneNumber = "$_countryCode${_phoneController.text.trim()}";
+    String phoneText = _phoneController.text.trim();
+    if (phoneText.startsWith('0')) {
+      phoneText = phoneText.substring(1);
+    }
+    String phoneNumber = "$_countryCode$phoneText";
 
-    await _auth.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      verificationCompleted: (PhoneAuthCredential credential) async {
+    try {
+      await _auth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        timeout: const Duration(seconds: 60),
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          if (mounted) setState(() => _isLoading = false);
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          if (mounted) setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.message ?? "Verification Failed")),
+          );
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          if (mounted) {
+            setState(() => _isLoading = false);
+            _showSuccessDialog(verificationId);
+          }
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          if (mounted) setState(() => _isLoading = false);
+        },
+      );
+    } catch (e) {
+      if (mounted) {
         setState(() => _isLoading = false);
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? "Verification Failed")),
-        );
-      },
-      codeSent: (String verificationId, int? resendToken) {
-        setState(() => _isLoading = false);
-        _showSuccessDialog(verificationId);
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {
-        setState(() => _isLoading = false);
-      },
-    );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+      }
+    }
   }
 
   @override

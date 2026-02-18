@@ -29,71 +29,115 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _addCloneUsers() async {
     CollectionReference users = FirebaseFirestore.instance.collection('users');
+
+    // Check if clones already exist to prevent duplication
+    var existingClones = await users
+        .where('uid', isGreaterThanOrEqualTo: 'clone_')
+        .get();
+    if (existingClones.docs.isNotEmpty) return;
+
     List<Map<String, dynamic>> dummyUsers = [
       {
-        'uid': 'clone_b1',
-        'name': 'Kasun',
-        'age': 25,
-        'gender': 'male',
-        'profilePic':
-            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_b2',
-        'name': 'Nuwan',
-        'age': 23,
-        'gender': 'male',
-        'profilePic':
-            'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_b3',
-        'name': 'Sahan',
-        'age': 24,
-        'gender': 'male',
-        'profilePic':
-            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000',
-        'profileCompleted': true,
-      },
-      {
         'uid': 'clone_g1',
-        'name': 'Dilini',
-        'age': 22,
+        'name': 'Jenna Ortega',
+        'age': 21,
         'gender': 'female',
         'profilePic':
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000',
+            'https://images.pexels.com/photos/19828527/pexels-photo-19828527/free-photo-of-jenna-ortega.jpeg?auto=compress&cs=tinysrgb&w=1000',
         'profileCompleted': true,
       },
       {
         'uid': 'clone_g2',
-        'name': 'Pooja',
-        'age': 21,
+        'name': 'Emma Watson',
+        'age': 33,
         'gender': 'female',
         'profilePic':
-            'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=1000',
+            'https://images.pexels.com/photos/13526131/pexels-photo-13526131.jpeg?auto=compress&cs=tinysrgb&w=1000',
         'profileCompleted': true,
       },
       {
         'uid': 'clone_g3',
-        'name': 'Ishani',
-        'age': 24,
+        'name': 'Mary Mouser',
+        'age': 29,
         'gender': 'female',
         'profilePic':
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=1000',
+            'https://images.pexels.com/photos/13526117/pexels-photo-13526117.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'profileCompleted': true,
+      },
+      {
+        'uid': 'clone_b1',
+        'name': 'Johnny Depp',
+        'age': 60,
+        'gender': 'male',
+        'profilePic':
+            'https://images.pexels.com/photos/13526115/pexels-photo-13526115.jpeg?auto=compress&cs=tinysrgb&w=1000',
         'profileCompleted': true,
       },
       {
         'uid': 'clone_g4',
-        'name': 'Kavindi',
-        'age': 20,
+        'name': 'Ana de Armas',
+        'age': 35,
         'gender': 'female',
         'profilePic':
-            'https://images.unsplash.com/photo-1531123897727-8f129e16fd06?q=80&w=1000',
+            'https://images.pexels.com/photos/13526114/pexels-photo-13526114.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'profileCompleted': true,
+      },
+      {
+        'uid': 'clone_g5',
+        'name': 'Megan Fox',
+        'age': 37,
+        'gender': 'female',
+        'profilePic':
+            'https://images.pexels.com/photos/13526118/pexels-photo-13526118.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'profileCompleted': true,
+      },
+      {
+        'uid': 'clone_b2',
+        'name': 'Tom Cruise',
+        'age': 61,
+        'gender': 'male',
+        'profilePic':
+            'https://images.pexels.com/photos/13526120/pexels-photo-13526120.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'profileCompleted': true,
+      },
+      {
+        'uid': 'clone_g6',
+        'name': 'Emilia Clarke',
+        'age': 37,
+        'gender': 'female',
+        'profilePic':
+            'https://images.pexels.com/photos/13526122/pexels-photo-13526122.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'profileCompleted': true,
+      },
+      {
+        'uid': 'clone_g7',
+        'name': 'Hande Ercel',
+        'age': 30,
+        'gender': 'female',
+        'profilePic':
+            'https://images.pexels.com/photos/13526123/pexels-photo-13526123.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'profileCompleted': true,
+      },
+      {
+        'uid': 'clone_g8',
+        'name': 'Ozge Yagiz',
+        'age': 26,
+        'gender': 'female',
+        'profilePic':
+            'https://images.pexels.com/photos/13526125/pexels-photo-13526125.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'profileCompleted': true,
+      },
+      {
+        'uid': 'clone_b4',
+        'name': 'Radhika Madan',
+        'age': 30,
+        'gender': 'female',
+        'profilePic':
+            'https://images.pexels.com/photos/13526126/pexels-photo-13526126.jpeg?auto=compress&cs=tinysrgb&w=1000',
         'profileCompleted': true,
       },
     ];
+
     for (var userData in dummyUsers) {
       await users.doc(userData['uid']).set(userData, SetOptions(merge: true));
     }
@@ -107,17 +151,22 @@ class _HomeScreenState extends State<HomeScreen> {
         .collection('liked_users')
         .doc(likedUserUid)
         .set({'likedAt': FieldValue.serverTimestamp()});
+
     var matchCheck = await FirebaseFirestore.instance
         .collection('users')
         .doc(likedUserUid)
         .collection('liked_users')
         .doc(currentUserId)
         .get();
+
     if (matchCheck.exists) _showMatchDialog();
-    _pageController.nextPage(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
-    );
+
+    if (_pageController.hasClients) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   Future<void> _handleUnlike(String likedUserUid) async {
@@ -258,7 +307,6 @@ class _HomeScreenState extends State<HomeScreen> {
             if (!likedSnapshot.hasData)
               return const Center(child: CircularProgressIndicator());
 
-            // Collect IDs of already liked users
             List<String> alreadyLikedUids = likedSnapshot.data!.docs
                 .map((doc) => doc.id)
                 .toList();
@@ -281,9 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 var users = snapshot.data!.docs.where((doc) {
                   var data = doc.data() as Map<String, dynamic>;
                   bool isNotMe = doc.id != currentUserId;
-                  bool isNotLiked = !alreadyLikedUids.contains(
-                    doc.id,
-                  ); // Filter out already liked users
+                  bool isNotLiked = !alreadyLikedUids.contains(doc.id);
                   bool matchesInterest =
                       interest == "both" ||
                       (interest == "girls" && data['gender'] == "female") ||
@@ -316,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildLikedUsersPage() {
-    return StreamBuilder(
+    return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('users')
           .doc(currentUserId)
@@ -353,7 +399,9 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context, userSnapshot) {
                 if (!userSnapshot.hasData)
                   return Container(color: Colors.grey[900]);
-                var data = userSnapshot.data!.data() as Map<String, dynamic>;
+                var data = userSnapshot.data!.data() as Map<String, dynamic>?;
+                if (data == null) return const SizedBox.shrink();
+
                 return GestureDetector(
                   onLongPress: () => _handleUnlike(likedUid),
                   child: Container(
@@ -440,7 +488,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const Text(
-                          "Sri Lanka",
+                          "Minggle Star",
                           style: TextStyle(color: Colors.white70, fontSize: 16),
                         ),
                       ],
@@ -456,10 +504,14 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.amber, size: 40),
-                onPressed: () => _pageController.nextPage(
-                  duration: const Duration(milliseconds: 400),
-                  curve: Curves.easeInOut,
-                ),
+                onPressed: () {
+                  if (_pageController.hasClients) {
+                    _pageController.nextPage(
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOut,
+                    );
+                  }
+                },
               ),
               IconButton(
                 icon: const Icon(
