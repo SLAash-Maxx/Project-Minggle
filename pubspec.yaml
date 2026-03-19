@@ -1,10 +1,10 @@
-name: flutter_application_1
-description: "A new Flutter project for Minggle Dating App."
+name: minggle
+description: Minggle - Premium Dating App with Vedic Astrology Compatibility
 publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.10.8 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -12,30 +12,32 @@ dependencies:
   firebase_core: ^2.24.2
   firebase_auth: ^4.15.3
   cloud_firestore: ^4.13.6
-  video_player: ^2.8.1 
-  cupertino_icons: ^1.0.8
-  image_picker: ^1.2.1
-  firebase_storage: ^11.6.5
+  firebase_storage: ^11.5.6
+  google_sign_in: ^6.2.1
+  go_router: ^13.0.1
+  google_fonts: ^6.1.0
+  flutter_animate: ^4.5.0
+  cached_network_image: ^3.3.1
+  image_picker: ^1.0.7
+  flutter_riverpod: ^2.4.9
+  http: ^1.2.0
+  dio: ^5.4.0
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.0.0
+  intl: ^0.19.0
+  pinput: ^3.0.0
+  permission_handler: ^11.3.0
+  url_launcher: ^6.2.4
+  shimmer: ^3.0.0
+  timeago: ^3.6.0
+  uuid: ^4.3.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
-  flutter_launcher_icons: "^0.13.1" # Add this for app icon generation
-
-# App icon configuration
-flutter_launcher_icons:
-  android: "launcher_icon"
-  ios: true
-  image_path: "assets/images/logo.png"
-  adaptive_icon_background: "#1A1A1A"
-  adaptive_icon_foreground: "assets/images/logo.png"
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
-
   assets:
     - assets/images/
-    - assets/videos/
-
-  

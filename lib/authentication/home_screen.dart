@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -27,15 +28,23 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  // Helper function to ensure SharePoint links are direct download links
+  String _getDirectUrl(String url) {
+    if (url.contains('sharepoint.com') && !url.contains('?download=1')) {
+      return '$url?download=1';
+    }
+    return url;
+  }
+
   Future<void> _addCloneUsers() async {
     CollectionReference users = FirebaseFirestore.instance.collection('users');
 
-    // Check if clones already exist to prevent duplication
     var existingClones = await users
         .where('uid', isGreaterThanOrEqualTo: 'clone_')
         .get();
     if (existingClones.docs.isNotEmpty) return;
 
+    // Added ?download=1 to all SharePoint links to ensure they load in Flutter
     List<Map<String, dynamic>> dummyUsers = [
       {
         'uid': 'clone_g1',
@@ -43,16 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'age': 21,
         'gender': 'female',
         'profilePic':
-            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDI5pK81dSiRboXduKuePLFAYmV5VmFaw0C_HlC0jWe8Og?e=l0RYGW',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_g2',
-        'name': 'Emma Watson',
-        'age': 33,
-        'gender': 'female',
-        'profilePic':
-            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQA-qbzQh1fmQ7YEy6ONGGkjAQPMa6vdU1qf9LEmV3y2vYQ?e=QzOvbR',
+            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDI5pK81dSiRboXduKuePLFAQcJkUbR3mtjnZik8l6HAlo?e=D2GumH&download=1',
         'profileCompleted': true,
       },
       {
@@ -61,79 +61,61 @@ class _HomeScreenState extends State<HomeScreen> {
         'age': 29,
         'gender': 'female',
         'profilePic':
-            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDg9cZRuQA8SIgzYFvXmKg2AXHU7s0qv-LWUXqfR2fITMw?e=jL8oMs',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_b1',
-        'name': 'Johnny Depp',
-        'age': 60,
-        'gender': 'male',
-        'profilePic':
-            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDpOoNTTGmpQpE4-AHATtjhASn6-VinOk2wvvGjU55HaOk?e=1M3seu',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_g4',
-        'name': 'Ana de Armas',
-        'age': 35,
-        'gender': 'female',
-        'profilePic':
-            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQD2VDvbAmpBTYAAkSt680mAASuh_G5F17m8IjzsMXgrbs8?e=GULArH',
+            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/mary.jpg?download=1',
         'profileCompleted': true,
       },
       {
         'uid': 'clone_g5',
-        'name': 'Megan Fox',
-        'age': 37,
+        'name': 'Millie Bobby Brown',
+        'age': 22,
         'gender': 'female',
         'profilePic':
-            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQB20feX7qujQo8dmxtA7NUAAZAOM3OpNtqfS1m1nsjZex4?e=r4h26y',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_b2',
-        'name': 'Tom Cruise',
-        'age': 61,
-        'gender': 'male',
-        'profilePic':
-            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQBMNHxZ2fFPQ5frJFs2yXrTAaEGdLwOY7-DcqAvZbyJpZo?e=9r5z2Z',
+            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/Millie%20Bobby%20Brown.jpg?download=1',
         'profileCompleted': true,
       },
       {
         'uid': 'clone_g6',
-        'name': 'Emilia Clarke',
-        'age': 37,
-        'gender': 'female',
+        'name': 'Tom Holland',
+        'age': 29,
+        'gender': 'male',
         'profilePic':
-            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQACLliYGic-T5ee0ndUbbNJAWS77qNGLvpGoqc5r8GBFDE?e=toCudR',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_g7',
-        'name': 'Hande Ercel',
-        'age': 30,
-        'gender': 'female',
-        'profilePic':
-            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDMMoIcY9Q7RokNYfiB__QyAXafNzGVuB0IMrw-6F4Yn7U?e=8beO0V',
+            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/Tom%20Holland.jpg?download=1',
         'profileCompleted': true,
       },
       {
         'uid': 'clone_g8',
+        'name': 'Emilia Clarke',
+        'age': 37,
+        'gender': 'female',
+        'profilePic':
+            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/Imilia.jpg?download=1',
+        'profileCompleted': true,
+      },
+      {
+        'uid': 'clone_g9',
+        'name': 'Hande Ercel',
+        'age': 30,
+        'gender': 'female',
+        'profilePic':
+            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/Hande.jpg?download=1',
+        'profileCompleted': true,
+      },
+      {
+        'uid': 'clone_g10',
         'name': 'Ozge Yagiz',
         'age': 26,
         'gender': 'female',
         'profilePic':
-            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDlVwCj8CHBQK5KXISza_mTAYcrkqzMxsgxTUdQA6V1TQs?e=XkJ1SP',
+            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/ozge.jpg?download=1',
         'profileCompleted': true,
       },
       {
-        'uid': 'clone_b4',
+        'uid': 'clone_g11',
         'name': 'Radhika Madan',
         'age': 30,
         'gender': 'female',
         'profilePic':
-            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDR_g5OgmXsTaxMF6K4wRs1AfkcvCPi7kl-P3Kf9_DooDs?e=vdXeHm',
+            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/radhika.jpg?download=1',
         'profileCompleted': true,
       },
     ];
@@ -407,32 +389,41 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
-                      image: DecorationImage(
-                        image: NetworkImage(data['profilePic'] ?? ""),
-                        fit: BoxFit.cover,
-                      ),
                     ),
-                    child: Container(
-                      alignment: Alignment.bottomLeft,
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.7),
-                          ],
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        CachedNetworkImage(
+                          imageUrl: _getDirectUrl(data['profilePic'] ?? ""),
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.person, color: Colors.white),
                         ),
-                      ),
-                      child: Text(
-                        data['name'] ?? "",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                        Container(
+                          alignment: Alignment.bottomLeft,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.7),
+                              ],
+                            ),
+                          ),
+                          child: Text(
+                            data['name'] ?? "",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 );
@@ -453,16 +444,21 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(25),
-                image: DecorationImage(
-                  image: NetworkImage(userData['profilePic'] ?? ""),
-                  fit: BoxFit.cover,
-                ),
               ),
+              clipBehavior: Clip.antiAlias,
               child: Stack(
+                fit: StackFit.expand,
                 children: [
+                  CachedNetworkImage(
+                    imageUrl: _getDirectUrl(userData['profilePic'] ?? ""),
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        const Center(child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error, color: Colors.white),
+                  ),
                   Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(25),
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
