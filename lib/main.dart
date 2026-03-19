@@ -26,7 +26,9 @@ class MinggleApp extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
               body: Center(
-                child: CircularProgressIndicator(color: Color(0xFFFF4D6D)),
+                child: CircularProgressIndicator(
+                  color: Color(0xFFFF4D6D),
+                ),
               ),
             );
           }

@@ -3,6 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+class UserProfile {
+  final String id;
+  final String name;
+  final int age;
+  final String bio;
+  final String imageUrl;
+  final String location;
+  final List<String> interests;
+
+  const UserProfile({
+    required this.id,
+    required this.name,
+    required this.age,
+    required this.bio,
+    required this.imageUrl,
+    required this.location,
+    required this.interests,
+  });
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -16,113 +36,43 @@ class _HomeScreenState extends State<HomeScreen> {
   final String currentUserId =
       FirebaseAuth.instance.currentUser?.uid ?? "unknown";
 
-  @override
-  void initState() {
-    super.initState();
-    _addCloneUsers();
-  }
+  final List<UserProfile> discoveryProfiles = const [
+    UserProfile(
+      id: '1',
+      name: 'Anika',
+      age: 24,
+      bio:
+          'Coffee lover ☕ | Dog mom 🐶 | Hiking enthusiast. Looking for someone to explore trails and try new cafés with.',
+      imageUrl: 'https://randomuser.me/api/portraits/women/44.jpg',
+      location: 'Colombo, LK',
+      interests: ['Hiking', 'Coffee', 'Photography', 'Travel'],
+    ),
+    UserProfile(
+      id: '2',
+      name: 'Rayan',
+      age: 27,
+      bio:
+          'Music producer 🎵 | Foodie | Beach bum on weekends. Let\'s grab kottu and talk about life.',
+      imageUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
+      location: 'Negombo, LK',
+      interests: ['Music', 'Food', 'Beach', 'Gaming'],
+    ),
+    UserProfile(
+      id: '3',
+      name: 'Nisha',
+      age: 22,
+      bio:
+          'Art student 🎨 | Book worm 📚 | Plant parent 🌿. Swipe right if you can handle my painting mess.',
+      imageUrl: 'https://randomuser.me/api/portraits/women/68.jpg',
+      location: 'Kandy, LK',
+      interests: ['Art', 'Reading', 'Plants', 'Yoga'],
+    ),
+  ];
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
-  }
-
-  // Helper function to ensure SharePoint links are direct download links
-  String _getDirectUrl(String url) {
-    if (url.contains('sharepoint.com') && !url.contains('?download=1')) {
-      return '$url?download=1';
-    }
-    return url;
-  }
-
-  Future<void> _addCloneUsers() async {
-    CollectionReference users = FirebaseFirestore.instance.collection('users');
-
-    var existingClones = await users
-        .where('uid', isGreaterThanOrEqualTo: 'clone_')
-        .get();
-    if (existingClones.docs.isNotEmpty) return;
-
-    // Added ?download=1 to all SharePoint links to ensure they load in Flutter
-    List<Map<String, dynamic>> dummyUsers = [
-      {
-        'uid': 'clone_g1',
-        'name': 'Jenna Ortega',
-        'age': 21,
-        'gender': 'female',
-        'profilePic':
-            'https://nsbm365-my.sharepoint.com/:i:/g/personal/wmvadiwyanjana_students_nsbm_ac_lk/IQDI5pK81dSiRboXduKuePLFAQcJkUbR3mtjnZik8l6HAlo?e=D2GumH&download=1',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_g3',
-        'name': 'Mary Mouser',
-        'age': 29,
-        'gender': 'female',
-        'profilePic':
-            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/mary.jpg?download=1',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_g5',
-        'name': 'Millie Bobby Brown',
-        'age': 22,
-        'gender': 'female',
-        'profilePic':
-            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/Millie%20Bobby%20Brown.jpg?download=1',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_g6',
-        'name': 'Tom Holland',
-        'age': 29,
-        'gender': 'male',
-        'profilePic':
-            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/Tom%20Holland.jpg?download=1',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_g8',
-        'name': 'Emilia Clarke',
-        'age': 37,
-        'gender': 'female',
-        'profilePic':
-            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/Imilia.jpg?download=1',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_g9',
-        'name': 'Hande Ercel',
-        'age': 30,
-        'gender': 'female',
-        'profilePic':
-            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/Hande.jpg?download=1',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_g10',
-        'name': 'Ozge Yagiz',
-        'age': 26,
-        'gender': 'female',
-        'profilePic':
-            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/ozge.jpg?download=1',
-        'profileCompleted': true,
-      },
-      {
-        'uid': 'clone_g11',
-        'name': 'Radhika Madan',
-        'age': 30,
-        'gender': 'female',
-        'profilePic':
-            'https://nsbm365-my.sharepoint.com/personal/wmvadiwyanjana_students_nsbm_ac_lk/Documents/radhika.jpg?download=1',
-        'profileCompleted': true,
-      },
-    ];
-
-    for (var userData in dummyUsers) {
-      await users.doc(userData['uid']).set(userData, SetOptions(merge: true));
-    }
   }
 
   Future<void> _handleLike(String likedUserUid) async {
@@ -134,15 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
         .doc(likedUserUid)
         .set({'likedAt': FieldValue.serverTimestamp()});
 
-    var matchCheck = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(likedUserUid)
-        .collection('liked_users')
-        .doc(currentUserId)
-        .get();
-
-    if (matchCheck.exists) _showMatchDialog();
-
     if (_pageController.hasClients) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
@@ -151,33 +92,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _handleUnlike(String likedUserUid) async {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(currentUserId)
-        .collection('liked_users')
-        .doc(likedUserUid)
-        .delete();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Removed from likes")));
-  }
-
   void _showLogoutDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
         title: const Text("Logout", style: TextStyle(color: Color(0xFFFF4D6D))),
-        content: const Text(
-          "Are you sure?",
-          style: TextStyle(color: Colors.white),
-        ),
+        content:
+            const Text("Are you sure?", style: TextStyle(color: Colors.white)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("No"),
-          ),
+              onPressed: () => Navigator.pop(context), child: const Text("No")),
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
@@ -186,30 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
             child: const Text("Yes"),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showMatchDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text("❤️", style: TextStyle(fontSize: 50)),
-            const Text(
-              "It's a Match!",
-              style: TextStyle(color: Colors.white, fontSize: 22),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Continue"),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -238,11 +139,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _selectedIndex == 0
           ? _buildDiscoverPage()
-          : _selectedIndex == 1
-          ? _buildLikedUsersPage()
           : const Center(
-              child: Text("Coming Soon", style: TextStyle(color: Colors.white)),
-            ),
+              child:
+                  Text("Coming Soon", style: TextStyle(color: Colors.white))),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
@@ -254,203 +153,38 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.style), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Liked"),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: "Chats",
-          ),
+              icon: Icon(Icons.chat_bubble_outline), label: "Chats"),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: "Profile",
-          ),
+              icon: Icon(Icons.person_outline), label: "Profile"),
         ],
       ),
     );
   }
 
   Widget _buildDiscoverPage() {
-    return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUserId)
-          .get(),
-      builder: (context, userSnapshot) {
-        String interest = "both";
-        if (userSnapshot.hasData && userSnapshot.data!.exists) {
-          var userData = userSnapshot.data!.data() as Map<String, dynamic>;
-          interest = userData['interest'] ?? "both";
-        }
-
-        return StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('users')
-              .doc(currentUserId)
-              .collection('liked_users')
-              .snapshots(),
-          builder: (context, likedSnapshot) {
-            if (!likedSnapshot.hasData)
-              return const Center(child: CircularProgressIndicator());
-
-            List<String> alreadyLikedUids = likedSnapshot.data!.docs
-                .map((doc) => doc.id)
-                .toList();
-
-            return StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('users')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting)
-                  return const Center(child: CircularProgressIndicator());
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
-                  return const Center(
-                    child: Text(
-                      "No users found",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  );
-
-                var users = snapshot.data!.docs.where((doc) {
-                  var data = doc.data() as Map<String, dynamic>;
-                  bool isNotMe = doc.id != currentUserId;
-                  bool isNotLiked = !alreadyLikedUids.contains(doc.id);
-                  bool matchesInterest =
-                      interest == "both" ||
-                      (interest == "girls" && data['gender'] == "female") ||
-                      (interest == "boys" && data['gender'] == "male");
-                  return isNotMe && isNotLiked && matchesInterest;
-                }).toList();
-
-                if (users.isEmpty)
-                  return const Center(
-                    child: Text(
-                      "No more new people!",
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  );
-
-                return PageView.builder(
-                  controller: _pageController,
-                  scrollDirection: Axis.vertical,
-                  itemCount: users.length,
-                  itemBuilder: (context, index) => _buildUserCard(
-                    users[index].data() as Map<String, dynamic>,
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
+    return PageView.builder(
+      controller: _pageController,
+      scrollDirection: Axis.vertical,
+      itemCount: discoveryProfiles.length,
+      itemBuilder: (context, index) => _buildUserCard(discoveryProfiles[index]),
     );
   }
 
-  Widget _buildLikedUsersPage() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUserId)
-          .collection('liked_users')
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData)
-          return const Center(child: CircularProgressIndicator());
-        var likedDocs = snapshot.data!.docs;
-        if (likedDocs.isEmpty)
-          return const Center(
-            child: Text(
-              "No likes yet!",
-              style: TextStyle(color: Colors.white70),
-            ),
-          );
-
-        return GridView.builder(
-          padding: const EdgeInsets.all(15),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 15,
-            crossAxisSpacing: 15,
-            childAspectRatio: 0.8,
-          ),
-          itemCount: likedDocs.length,
-          itemBuilder: (context, index) {
-            String likedUid = likedDocs[index].id;
-            return FutureBuilder<DocumentSnapshot>(
-              future: FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(likedUid)
-                  .get(),
-              builder: (context, userSnapshot) {
-                if (!userSnapshot.hasData)
-                  return Container(color: Colors.grey[900]);
-                var data = userSnapshot.data!.data() as Map<String, dynamic>?;
-                if (data == null) return const SizedBox.shrink();
-
-                return GestureDetector(
-                  onLongPress: () => _handleUnlike(likedUid),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        CachedNetworkImage(
-                          imageUrl: _getDirectUrl(data['profilePic'] ?? ""),
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.person, color: Colors.white),
-                        ),
-                        Container(
-                          alignment: Alignment.bottomLeft,
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.black.withOpacity(0.7),
-                              ],
-                            ),
-                          ),
-                          child: Text(
-                            data['name'] ?? "",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildUserCard(Map<String, dynamic> userData) {
+  Widget _buildUserCard(UserProfile user) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
         children: [
           Expanded(
             child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(25),
-              ),
+              decoration:
+                  BoxDecoration(borderRadius: BorderRadius.circular(25)),
               clipBehavior: Clip.antiAlias,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
                   CachedNetworkImage(
-                    imageUrl: _getDirectUrl(userData['profilePic'] ?? ""),
+                    imageUrl: user.imageUrl,
                     fit: BoxFit.cover,
                     placeholder: (context, url) =>
                         const Center(child: CircularProgressIndicator()),
@@ -464,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.8),
+                          Colors.black.withOpacity(0.8)
                         ],
                       ),
                     ),
@@ -472,20 +206,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   Positioned(
                     bottom: 30,
                     left: 20,
+                    right: 20,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "${userData['name'] ?? 'User'}, ${userData['age'] ?? '??'}",
+                          "${user.name}, ${user.age}",
                           style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold),
                         ),
-                        const Text(
-                          "Minggle Star",
-                          style: TextStyle(color: Colors.white70, fontSize: 16),
+                        Text(user.location,
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 16)),
+                        const SizedBox(height: 10),
+                        Text(
+                          user.bio,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 14),
                         ),
                       ],
                     ),
@@ -501,21 +242,15 @@ class _HomeScreenState extends State<HomeScreen> {
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.amber, size: 40),
                 onPressed: () {
-                  if (_pageController.hasClients) {
-                    _pageController.nextPage(
+                  _pageController.nextPage(
                       duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeInOut,
-                    );
-                  }
+                      curve: Curves.easeInOut);
                 },
               ),
               IconButton(
-                icon: const Icon(
-                  Icons.favorite,
-                  color: Color(0xFFFF4D6D),
-                  size: 50,
-                ),
-                onPressed: () => _handleLike(userData['uid']),
+                icon: const Icon(Icons.favorite,
+                    color: Color(0xFFFF4D6D), size: 50),
+                onPressed: () => _handleLike(user.id),
               ),
             ],
           ),

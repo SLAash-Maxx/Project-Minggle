@@ -16,19 +16,23 @@ class HobbiesScreen extends StatefulWidget {
 }
 
 class _HobbiesScreenState extends State<HobbiesScreen> {
-  final List<String> _hobbies = [
-    "Music",
-    "Travel",
-    "Cooking",
-    "Gaming",
-    "Sports",
-    "Reading",
-    "Dancing",
-    "Movies",
-    "Art",
-    "Photography",
-    "Fashion",
-    "Pets",
+  final List<Map<String, String>> _hobbies = [
+    {"name": "Hiking", "emoji": "🥾"},
+    {"name": "Coffee", "emoji": "☕"},
+    {"name": "Photography", "emoji": "📸"},
+    {"name": "Travel", "emoji": "✈️"},
+    {"name": "Music", "emoji": "🎵"},
+    {"name": "Food", "emoji": "🍕"},
+    {"name": "Beach", "emoji": "🏖️"},
+    {"name": "Gaming", "emoji": "🎮"},
+    {"name": "Art", "emoji": "🎨"},
+    {"name": "Reading", "emoji": "📚"},
+    {"name": "Plants", "emoji": "🌿"},
+    {"name": "Yoga", "emoji": "🧘"},
+    {"name": "Cooking", "emoji": "🍳"},
+    {"name": "Movies", "emoji": "🎬"},
+    {"name": "Sports", "emoji": "🏀"},
+    {"name": "Fashion", "emoji": "👗"},
   ];
 
   final List<String> _selectedHobbies = [];
@@ -83,36 +87,46 @@ class _HobbiesScreenState extends State<HobbiesScreen> {
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 2.5,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
+                  childAspectRatio: 2.2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
                 ),
                 itemCount: _hobbies.length,
                 itemBuilder: (context, index) {
-                  String hobby = _hobbies[index];
-                  bool isSelected = _selectedHobbies.contains(hobby);
+                  String hobbyName = _hobbies[index]["name"]!;
+                  String hobbyEmoji = _hobbies[index]["emoji"]!;
+                  bool isSelected = _selectedHobbies.contains(hobbyName);
                   return GestureDetector(
-                    onTap: () => _toggleHobby(hobby),
+                    onTap: () => _toggleHobby(hobbyName),
                     child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? const Color(0xFFFF4D6D)
                             : const Color(0xFF333333),
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(
-                          color: isSelected
-                              ? Colors.white38
-                              : Colors.transparent,
+                          color:
+                              isSelected ? Colors.white38 : Colors.transparent,
                         ),
                       ),
-                      child: Center(
-                        child: Text(
-                          hobby,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(hobbyEmoji,
+                              style: const TextStyle(fontSize: 18)),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              hobbyName,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   );

@@ -38,11 +38,11 @@ class _InterestScreenState extends State<InterestScreen> {
               ),
             ),
             const SizedBox(height: 30),
-            _buildOption("Female"),
+            _buildOption("Female", "👩"),
             const SizedBox(height: 15),
-            _buildOption("Male"),
+            _buildOption("Male", "👨"),
             const SizedBox(height: 15),
-            _buildOption("Both"),
+            _buildOption("Both", "🌈"),
             const Spacer(),
             SizedBox(
               width: double.infinity,
@@ -87,7 +87,7 @@ class _InterestScreenState extends State<InterestScreen> {
     );
   }
 
-  Widget _buildOption(String interest) {
+  Widget _buildOption(String interest, String emoji) {
     bool isSelected = _selectedInterest == interest;
     return GestureDetector(
       onTap: () => setState(() => _selectedInterest = interest),
@@ -101,15 +101,23 @@ class _InterestScreenState extends State<InterestScreen> {
             color: isSelected ? Colors.white38 : Colors.transparent,
           ),
         ),
-        child: Center(
-          child: Text(
-            interest,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              emoji,
+              style: const TextStyle(fontSize: 22),
             ),
-          ),
+            const SizedBox(width: 15),
+            Text(
+              interest,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );

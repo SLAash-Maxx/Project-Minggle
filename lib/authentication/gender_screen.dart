@@ -71,9 +71,8 @@ class _GenderScreenState extends State<GenderScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: _selectedGender != null
-                        ? Colors.white
-                        : Colors.white38,
+                    color:
+                        _selectedGender != null ? Colors.white : Colors.white38,
                   ),
                 ),
               ),
