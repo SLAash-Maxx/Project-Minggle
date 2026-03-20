@@ -57,24 +57,6 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                   ),
                 ),
 
-
-                Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset('assets/images/logo2.png', height: 500),
-                const SizedBox(height: 20),
-                const Text(
-                  "Welcome Homies",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 45,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-
-
                 
                 const SizedBox(height: 50),
                 ElevatedButton(
