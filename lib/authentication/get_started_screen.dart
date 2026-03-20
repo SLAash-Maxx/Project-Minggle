@@ -12,16 +12,7 @@ class GetStartedScreen extends StatefulWidget {
 class _GetStartedScreenState extends State<GetStartedScreen> {
   late VideoPlayerController _controller;
 
-   @override
-  void initState() {
-    super.initState();
-    _controller = VideoPlayerController.asset("assets/videos/minggle.mp4")
-      ..initialize().then((_) {
-        _controller.play();
-        _controller.setLooping(false);
-        setState(() {});
-      });
-  }
+ 
 
   @override
   void initState() {
