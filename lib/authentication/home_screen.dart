@@ -157,3 +157,125 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF1A1A1A),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text("Minggle",
+            style: TextStyle(
+                color: Color(0xFFFF4D6D),
+                fontSize: 28,
+                fontWeight: FontWeight.bold)),
+        actions: [
+          IconButton(
+              icon: const Icon(Icons.logout, color: Colors.white),
+              onPressed: _showLogoutDialog)
+        ],
+      ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          _buildDiscoverPage(),
+          const LikedScreen(),
+          const ChatScreen(),
+          const ProfileScreen(),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) => setState(() => _selectedIndex = index),
+        backgroundColor: const Color(0xFF1A1A1A),
+        selectedItemColor: const Color(0xFFFF4D6D),
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.style), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Liked"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.chat_bubble_outline), label: "Chats"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline), label: "Profile"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDiscoverPage() {
+    return PageView.builder(
+      controller: _pageController,
+      scrollDirection: Axis.vertical,
+      itemCount: discoveryProfiles.length,
+      itemBuilder: (context, index) => _buildUserCard(discoveryProfiles[index]),
+    );
+  }
+
+  Widget _buildUserCard(UserProfile user) {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(25),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CachedNetworkImage(
+                      imageUrl: user.imageUrl, fit: BoxFit.cover),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.8)
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 20,
+                    left: 20,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("${user.name}, ${user.age}",
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold)),
+                        Text(user.location,
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 16)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                  icon: const Icon(Icons.close, color: Colors.amber, size: 40),
+                  onPressed: () => _pageController.nextPage(
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOut)),
+              IconButton(
+                  icon: const Icon(Icons.favorite,
+                      color: Color(0xFFFF4D6D), size: 50),
+                  onPressed: () => _handleLike(user)),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+}
