@@ -98,3 +98,62 @@ class _HomeScreenState extends State<HomeScreen> {
       location: 'Anuradhapura, LK',
     ),
   ];
+
+  
+  Future<void> _handleLike(UserProfile user) async {
+    if (currentUserId == "unknown") return;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUserId)
+        .collection('liked_users')
+        .doc(user.id)
+        .set({'likedAt': FieldValue.serverTimestamp()});
+
+    await FirebaseFirestore.instance.collection('users').doc(user.id).set({
+      'uid': user.id,
+      'name': user.name,
+      'profilePic': user.imageUrl,
+      'bio': user.bio,
+    }, SetOptions(merge: true));
+
+    if (_pageController.hasClients) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        title: const Text("Logout", style: TextStyle(color: Color(0xFFFF4D6D))),
+        content: const Text("Are you sure you want to logout?",
+            style: TextStyle(color: Colors.white)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: const Text("No")),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await FirebaseAuth.instance.signOut();
+              await GoogleSignIn().signOut();
+              if (mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                      builder: (context) => const GetStartedScreen()),
+                  (route) => false,
+                );
+              }
+            },
+            child:
+                const Text("Yes", style: TextStyle(color: Color(0xFFFF4D6D))),
+          ),
+        ],
+      ),
+    );
+  }
+
