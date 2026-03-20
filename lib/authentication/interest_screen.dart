@@ -42,7 +42,7 @@ class _InterestScreenState extends State<InterestScreen> {
             const SizedBox(height: 15),
             _buildOption("Male", "👨"),
             const SizedBox(height: 15),
-            _buildOption("Both", "🌈"),
+            _buildOption("Both", ""),
             const Spacer(),
             SizedBox(
               width: double.infinity,
