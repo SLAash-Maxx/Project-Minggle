@@ -22,7 +22,7 @@ class _ChatScreenState extends State<ChatScreen> {
       backgroundColor: const Color(0xFF1A1A1A),
       body: Column(
         children: [
-          // ── Message Requests Banner ──────────────────────────────────────
+          
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('message_requests')
@@ -110,7 +110,7 @@ class _ChatScreenState extends State<ChatScreen> {
             },
           ),
 
-          // ── Accepted Chats List ──────────────────────────────────────────
+          
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -184,7 +184,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-// ── Individual chat tile with live status ────────────────────────────────────
+
 
 class _ChatTile extends StatelessWidget {
   final String currentUserId;
@@ -210,7 +210,7 @@ class _ChatTile extends StatelessWidget {
         final peerPic =
             userData['profilePic'] ?? 'https://via.placeholder.com/150';
 
-        // Listen to request + chat status for subtitle
+        
         return StreamBuilder<DocumentSnapshot>(
           stream: FirebaseFirestore.instance
               .collection('message_requests')
