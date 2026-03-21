@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'login_selection_screen.dart';
+import 'get_started_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -12,25 +13,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final List<Map<String, String>> _allHobbies = [
-    {"name": "Hiking", "emoji": "🥾"},
-    {"name": "Coffee", "emoji": "☕"},
-    {"name": "Photography", "emoji": "📸"},
-    {"name": "Travel", "emoji": "✈️"},
-    {"name": "Music", "emoji": "🎵"},
-    {"name": "Food", "emoji": "🍕"},
-    {"name": "Beach", "emoji": "🏖️"},
-    {"name": "Gaming", "emoji": "🎮"},
-    {"name": "Art", "emoji": "🎨"},
-    {"name": "Reading", "emoji": "📚"},
-    {"name": "Plants", "emoji": "🌿"},
-    {"name": "Yoga", "emoji": "🧘"},
-    {"name": "Cooking", "emoji": "🍳"},
-    {"name": "Movies", "emoji": "🎬"},
-    {"name": "Sports", "emoji": "🏀"},
-    {"name": "Fashion", "emoji": "👗"},
-  ];
-
   final List<String> _whatsappStatuses = const [
     "Available",
     "Busy",
@@ -40,142 +22,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     "Battery about to die",
     "Can't talk, Minggle only",
   ];
-
-  void _showEditHobbiesDialog(
-      BuildContext context, List<dynamic> currentHobbies, String userId) {
-    List<String> selectedHobbies = List<String>.from(currentHobbies);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color(0xFF1A1A1A),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-      ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
-          padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-              left: 20,
-              right: 20,
-              top: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("Edit Hobbies",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold)),
-              const SizedBox(height: 5),
-              Text(
-                "${selectedHobbies.length} selected (minimum 4)",
-                style: TextStyle(
-                  color: selectedHobbies.length >= 4
-                      ? Colors.greenAccent
-                      : Colors.grey,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 15),
-              SizedBox(
-                height: 280,
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 2.2,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: _allHobbies.length,
-                  itemBuilder: (context, index) {
-                    String hobbyName = _allHobbies[index]["name"]!;
-                    String hobbyEmoji = _allHobbies[index]["emoji"]!;
-                    bool isSelected = selectedHobbies.contains(hobbyName);
-                    return GestureDetector(
-                      onTap: () {
-                        setModalState(() {
-                          if (isSelected) {
-                            selectedHobbies.remove(hobbyName);
-                          } else {
-                            selectedHobbies.add(hobbyName);
-                          }
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color(0xFFFF4D6D)
-                              : const Color(0xFF333333),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isSelected
-                                ? Colors.white38
-                                : Colors.transparent,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(hobbyEmoji,
-                                style: const TextStyle(fontSize: 16)),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                hobbyName,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 15),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: selectedHobbies.length >= 4
-                      ? const Color(0xFFFF4D6D)
-                      : Colors.white10,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: selectedHobbies.length >= 4
-                    ? () async {
-                        await FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(userId)
-                            .update({'hobbies': selectedHobbies});
-                        if (context.mounted) Navigator.pop(context);
-                      }
-                    : null,
-                child: Text(
-                  "Save",
-                  style: TextStyle(
-                    color: selectedHobbies.length >= 4
-                        ? Colors.white
-                        : Colors.white38,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
@@ -196,7 +42,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
-                      builder: (context) => const LoginSelectionScreen()),
+                      builder: (context) => const GetStartedScreen()),
                   (route) => false,
                 );
               }
@@ -275,8 +121,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     .collection('users')
                     .doc(userId)
                     .update({'bio': bioController.text});
-                if (context.mounted)
+                if (context.mounted) {
                   Navigator.pop(context); // Close the sheet after saving
+                }
               },
               child: const Text("Save",
                   style: TextStyle(
@@ -286,6 +133,577 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  List<Map<String, dynamic>> _getGeoZones(dynamic map) {
+    if (map is List) {
+      return map
+          .whereType<Map>()
+          .map((raw) => raw.map<String, dynamic>(
+              (key, value) => MapEntry(key.toString(), value)))
+          .map((zone) => {
+                'name': zone['name'] ?? 'Unnamed',
+                'radius': zone['radius'] ?? 1.0,
+                'hidden': zone['hidden'] ?? true,
+                'latitude': zone['latitude'] ?? 0.0,
+                'longitude': zone['longitude'] ?? 0.0,
+              })
+          .toList();
+    }
+    return [
+      {
+        'name': 'Home',
+        'radius': 1.0,
+        'hidden': true,
+        'latitude': 0.0,
+        'longitude': 0.0,
+      },
+      {
+        'name': 'Work',
+        'radius': 1.0,
+        'hidden': true,
+        'latitude': 0.0,
+        'longitude': 0.0,
+      },
+    ];
+  }
+
+  Future<LatLng?> _pickGeoZoneLocation(
+      BuildContext context, LatLng initial) async {
+    LatLng selected = initial;
+    final result = await showModalBottomSheet<LatLng>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
+      builder: (sheetContext) {
+        return StatefulBuilder(builder: (mapContext, setState) {
+          return SizedBox(
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: Column(
+              children: [
+                Expanded(
+                  child: GoogleMap(
+                    mapType: MapType.normal,
+                    initialCameraPosition:
+                        CameraPosition(target: selected, zoom: 14.0),
+                    onTap: (latLng) {
+                      selected = latLng;
+                      setState(() {});
+                    },
+                    markers: {
+                      Marker(
+                          markerId: const MarkerId('zone-target'),
+                          position: selected),
+                    },
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Lat: ${selected.latitude.toStringAsFixed(6)}, Lng: ${selected.longitude.toStringAsFixed(6)}',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF4D6D)),
+                        onPressed: () {
+                          Navigator.pop(sheetContext, selected);
+                        },
+                        child: const Text('Use this location'),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF373737)),
+                        onPressed: () {
+                          Navigator.pop(sheetContext, null);
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+      },
+    );
+    return result;
+  }
+
+  Future<void> _saveGeoZones(
+      String userId, List<Map<String, dynamic>> zones) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .update({'geoBlockingZones': zones});
+  }
+
+  void _showAddGeoZoneDialog(
+      BuildContext context,
+      String userId,
+      List<Map<String, dynamic>> zones,
+      void Function(List<Map<String, dynamic>>) onUpdate) {
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController radiusController = TextEditingController();
+    LatLng selectedLocation = const LatLng(0.0, 0.0);
+    bool hidden = true;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Add Geo Blocking Zone",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold)),
+              const SizedBox(height: 15),
+              TextField(
+                controller: nameController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Zone Name',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.1),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: radiusController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Radius (km)',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.1),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Lat: ${selectedLocation.latitude.toStringAsFixed(6)}\nLng: ${selectedLocation.longitude.toStringAsFixed(6)}',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF373737),
+                    ),
+                    onPressed: () async {
+                      final LatLng? loc =
+                          await _pickGeoZoneLocation(context, selectedLocation);
+                      if (loc != null) {
+                        setState(() {
+                          selectedLocation = loc;
+                        });
+                      }
+                    },
+                    child: const Text('Add location',
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Hidden in this zone',
+                      style: TextStyle(color: Colors.white70)),
+                  Switch(
+                    value: hidden,
+                    onChanged: (value) => setState(() => hidden = value),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 15),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF4D6D),
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () async {
+                  final String name = nameController.text.trim();
+                  final double radius =
+                      double.tryParse(radiusController.text) ?? 1.0;
+                  if (name.isEmpty) return;
+
+                  final newZones = List<Map<String, dynamic>>.from(zones);
+                  newZones.add({
+                    'name': name,
+                    'radius': radius,
+                    'hidden': hidden,
+                    'latitude': selectedLocation.latitude,
+                    'longitude': selectedLocation.longitude,
+                  });
+                  await _saveGeoZones(userId, newZones);
+                  onUpdate(newZones);
+
+                  if (context.mounted) Navigator.pop(context);
+                },
+                child: const Text('Save Zone',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEditGeoZoneDialog(
+      BuildContext context,
+      String userId,
+      int index,
+      List<Map<String, dynamic>> zones,
+      void Function(List<Map<String, dynamic>>) onUpdate) {
+    final Map<String, dynamic> zone = zones[index];
+    final TextEditingController nameController =
+        TextEditingController(text: zone['name']?.toString() ?? '');
+    final TextEditingController radiusController =
+        TextEditingController(text: (zone['radius']?.toString() ?? '1.0'));
+    LatLng selectedLocation = LatLng(
+      (zone['latitude'] as num?)?.toDouble() ?? 0.0,
+      (zone['longitude'] as num?)?.toDouble() ?? 0.0,
+    );
+    bool hidden = zone['hidden'] is bool ? zone['hidden'] : true;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Edit Geo Blocking Zone",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold)),
+              const SizedBox(height: 15),
+              TextField(
+                controller: nameController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Zone Name',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.1),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: radiusController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Radius (km)',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.1),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Lat: ${selectedLocation.latitude.toStringAsFixed(6)}\nLng: ${selectedLocation.longitude.toStringAsFixed(6)}',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF373737),
+                    ),
+                    onPressed: () async {
+                      final LatLng? loc =
+                          await _pickGeoZoneLocation(context, selectedLocation);
+                      if (loc != null) {
+                        setState(() {
+                          selectedLocation = loc;
+                        });
+                      }
+                    },
+                    child: const Text('Edit location',
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Hidden in this zone',
+                      style: TextStyle(color: Colors.white70)),
+                  Switch(
+                    value: hidden,
+                    activeThumbColor: const Color(0xFFFF4D6D),
+                    onChanged: (value) => setState(() => hidden = value),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 15),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF4D6D),
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () async {
+                  final String name = nameController.text.trim();
+                  final double radius =
+                      double.tryParse(radiusController.text) ?? 1.0;
+                  if (name.isEmpty) return;
+
+                  final updatedZones = List<Map<String, dynamic>>.from(zones);
+                  updatedZones[index] = {
+                    'name': name,
+                    'radius': radius,
+                    'hidden': hidden,
+                    'latitude': selectedLocation.latitude,
+                    'longitude': selectedLocation.longitude,
+                  };
+                  await _saveGeoZones(userId, updatedZones);
+                  onUpdate(updatedZones);
+
+                  if (context.mounted) Navigator.pop(context);
+                },
+                child: const Text('Save Zone',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGeoBlockingSection(
+      BuildContext context,
+      String userId,
+      List<Map<String, dynamic>> geoZones,
+      void Function(List<Map<String, dynamic>>) onUpdate) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Align(
+          alignment: Alignment.centerLeft,
+          child: Text("Geo Blocking",
+              style: TextStyle(color: Colors.grey, fontSize: 14)),
+        ),
+        const SizedBox(height: 10),
+        if (geoZones.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(15),
+            decoration: BoxDecoration(
+              color: const Color(0xFF333333),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Text(
+              'No geo-blocking zones yet. Add one to hide your location in selected areas.',
+              style: TextStyle(color: Colors.white70),
+            ),
+          )
+        else
+          Column(
+            children: geoZones.map((zone) {
+              String zoneName = zone['name']?.toString() ?? 'Unnamed Zone';
+              double radius = (zone['radius'] is num)
+                  ? (zone['radius'] as num).toDouble()
+                  : 1.0;
+              bool isHidden = zone['hidden'] is bool ? zone['hidden'] : true;
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A2A2A),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  title: Text(zoneName,
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Radius: ${radius.toStringAsFixed(1)} km',
+                          style: const TextStyle(color: Colors.white70)),
+                      Text(
+                          'Lat: ${((zone['latitude'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(5)}, Lng: ${((zone['longitude'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(5)}',
+                          style: const TextStyle(
+                              color: Colors.white54, fontSize: 12)),
+                    ],
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Switch(
+                        activeThumbColor: const Color(0xFFFF4D6D),
+                        value: isHidden,
+                        onChanged: (newValue) async {
+                          final updatedZones = geoZones.map((z) {
+                            if ((z['name'] ?? '') == zoneName) {
+                              return {
+                                'name': zoneName,
+                                'radius': radius,
+                                'hidden': newValue
+                              };
+                            }
+                            return z;
+                          }).toList();
+                          await _saveGeoZones(userId, updatedZones);
+                          onUpdate(updatedZones);
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.white70),
+                        onPressed: () => _showEditGeoZoneDialog(context, userId,
+                            geoZones.indexOf(zone), geoZones, onUpdate),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.redAccent),
+                        onPressed: () async {
+                          final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  backgroundColor: const Color(0xFF1A1A1A),
+                                  title: const Text('Delete zone',
+                                      style: TextStyle(color: Colors.white)),
+                                  content: const Text(
+                                      'Are you sure you want to delete this geo-blocking zone? You can add it again later.',
+                                      style: TextStyle(color: Colors.white70)),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, false),
+                                        child: const Text('Cancel')),
+                                    TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, true),
+                                        child: const Text('Delete',
+                                            style: TextStyle(
+                                                color: Colors.redAccent))),
+                                  ],
+                                ),
+                              ) ??
+                              false;
+                          if (!confirmed) return;
+
+                          final updatedZones =
+                              List<Map<String, dynamic>>.from(geoZones);
+                          updatedZones.removeAt(geoZones.indexOf(zone));
+                          await _saveGeoZones(userId, updatedZones);
+                          onUpdate(updatedZones);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () =>
+                    _showAddGeoZoneDialog(context, userId, geoZones, onUpdate),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E1E1E),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    side: const BorderSide(color: Color(0xFFFF4D6D))),
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: const Text('Add new zone',
+                    style: TextStyle(color: Colors.white)),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () =>
+                    _showAddGeoZoneDialog(context, userId, geoZones, onUpdate),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF373737),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                child: const Text('Manage all zones',
+                    style: TextStyle(color: Colors.white)),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -320,6 +738,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           List<dynamic> hobbies = (hobbiesData is List)
               ? hobbiesData
               : ['Music', 'Travel', 'Coding'];
+
+          // Geo blocking zones from Firestore
+          List<Map<String, dynamic>> geoZones =
+              _getGeoZones(userData['geoBlockingZones']);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 40),
@@ -407,25 +829,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 25),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Hobbies",
-                        style: TextStyle(color: Colors.grey, fontSize: 14)),
-                    GestureDetector(
-                      onTap: () => _showEditHobbiesDialog(
-                          context, hobbies, currentUserId),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.edit, color: Colors.white24, size: 14),
-                          SizedBox(width: 4),
-                          Text("Edit",
-                              style:
-                                  TextStyle(color: Colors.white38, fontSize: 13)),
-                        ],
-                      ),
-                    ),
-                  ],
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text("Hobbies",
+                      style: TextStyle(color: Colors.grey, fontSize: 14)),
                 ),
                 const SizedBox(height: 10),
                 Align(
@@ -447,6 +854,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         .toList(),
                   ),
                 ),
+                const SizedBox(height: 25),
+                _buildGeoBlockingSection(context, currentUserId, geoZones,
+                    (updatedZones) {
+                  setState(() {});
+                }),
                 const SizedBox(height: 40),
                 SizedBox(
                   width: double.infinity,
