@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'profile_picture_screen.dart';
-import 'home_screen.dart';
+import 'face_verification_screen.dart';
 
 class OTPScreen extends StatefulWidget {
   final String phoneNumber;
@@ -50,8 +50,12 @@ class _OTPScreenState extends State<OTPScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    for (var controller in _controllers) controller.dispose();
-    for (var node in _focusNodes) node.dispose();
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    for (var node in _focusNodes) {
+      node.dispose();
+    }
     super.dispose();
   }
 
@@ -88,16 +92,18 @@ class _OTPScreenState extends State<OTPScreen> {
           .signInWithCredential(credential);
       User? user = userCredential.user;
 
-      if (user != null && mounted) {
+      if (user != null) {
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
             .get();
 
+        if (!mounted) return;
+
         if (userDoc.exists) {
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            MaterialPageRoute(builder: (context) => const FaceVerificationScreen()),
             (route) => false,
           );
         } else {
@@ -116,6 +122,7 @@ class _OTPScreenState extends State<OTPScreen> {
                 'createdAt': FieldValue.serverTimestamp(),
               }, SetOptions(merge: true));
 
+          if (!mounted) return;
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
@@ -126,16 +133,18 @@ class _OTPScreenState extends State<OTPScreen> {
         }
       }
     } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(e.message ?? "Invalid OTP code!")));
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
       if (FirebaseAuth.instance.currentUser != null) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) => const FaceVerificationScreen()),
           (route) => false,
         );
       }
@@ -218,8 +227,9 @@ class _OTPScreenState extends State<OTPScreen> {
                         fillColor: const Color(0xFF333333),
                       ),
                       onChanged: (value) {
-                        if (value.isNotEmpty && index < 5)
+                        if (value.isNotEmpty && index < 5) {
                           _focusNodes[index + 1].requestFocus();
+                        }
                       },
                     ),
                   ),
