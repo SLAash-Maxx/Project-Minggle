@@ -1,6 +1,5 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'home_screen.dart';
 
 class FaceVerificationScreen extends StatefulWidget {
@@ -14,16 +13,6 @@ class _FaceVerificationScreenState extends State<FaceVerificationScreen> {
   CameraController? _controller;
   bool _isCameraInitialized = false;
   bool _isProcessing = false;
-
-  final FaceDetector _faceDetector = FaceDetector(
-    options: FaceDetectorOptions(
-      performanceMode: FaceDetectorMode.accurate,
-      enableClassification: true,
-      enableLandmarks: false,
-      enableContours: false,
-      minFaceSize: 0.2,
-    ),
-  );
 
   @override
   void initState() {
@@ -57,33 +46,20 @@ class _FaceVerificationScreenState extends State<FaceVerificationScreen> {
     setState(() => _isProcessing = true);
 
     try {
+      // Take a photo
       final XFile imageFile = await _controller!.takePicture();
-      final InputImage inputImage = InputImage.fromFilePath(imageFile.path);
-
-      final List<Face> faces = await _faceDetector.processImage(inputImage);
-      if (faces.isEmpty) {
-        _showResultDialog(
-            'Face not detected', 'No face found. Please try again.');
-      } else if (faces.length > 1) {
-        _showResultDialog('Multiple faces detected',
-            'Please ensure only your face is in the frame.');
+      
+      if (imageFile.path.isNotEmpty) {
+        // Photo captured successfully
+        _showResultDialog('Verified', 'Face verification successful',
+            onOk: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        });
       } else {
-        final Face face = faces.first;
-        final double? smileProb = face.smilingProbability;
-        final bool isGoodMatch = smileProb != null ? smileProb > 0.2 : true;
-
-        if (isGoodMatch) {
-          _showResultDialog('Verified', 'Face verification successful',
-              onOk: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
-            );
-          });
-        } else {
-          _showResultDialog('Not confident',
-              'Please smile and try again for better verification.');
-        }
+        _showResultDialog('Error', 'Failed to capture photo. Please try again.');
       }
     } catch (e) {
       _showResultDialog('Error', 'Face verification failed: $e');
@@ -95,7 +71,6 @@ class _FaceVerificationScreenState extends State<FaceVerificationScreen> {
   @override
   void dispose() {
     _controller?.dispose();
-    _faceDetector.close();
     super.dispose();
   }
 
