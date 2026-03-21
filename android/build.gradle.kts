@@ -1,52 +1,55 @@
 plugins {
-    // Keep this as 8.11.1
-    id("com.android.application") version "8.11.1" apply false
-    
-    // Change 1.8.22 to 2.2.20 as requested by the error
-    id("org.jetbrains.kotlin.android") version "2.2.20" apply false
-    
-    // Keep this as 4.4.0
-    id("com.google.gms.google-services") version "4.4.0" apply false
+    id("com.android.application")
+    id("kotlin-android")
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins
+    id("dev.flutter.flutter-gradle-plugin")
+    // Google Services plugin for Firebase integration
+    id("com.google.gms.google-services")
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
+android {
+    namespace = "com.minggle.app"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
-    // Fix namespace issue for google_ml_kit and other legacy library modules
-    afterEvaluate {
-        if (pluginManager.hasPlugin("com.android.library")) {
-            val androidExtension = extensions.findByName("android")
-            if (androidExtension is com.android.build.gradle.LibraryExtension) {
-                if (androidExtension.namespace == null) {
-                    // Assign namespace based on project name
-                    androidExtension.namespace = when {
-                        project.name.contains("google_ml_kit") -> "com.b.biradar.google_ml_kit"
-                        else -> "com.minggle.lib.${project.name.replace("-", "").replace("_", "")}"
-                    }
-                }
-            }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    defaultConfig {
+        // Unique Application ID for Minggle App
+        applicationId = "com.minggle.app"
+        // Minimum SDK version 21 is required for Firebase services
+        minSdk = 26
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
+
+    buildTypes {
+        release {
+            // Signing with the debug keys for now for testing
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 }
 
-val newBuildDir: Directory =
-    rootProject.layout.buildDirectory
-        .dir("../../build")
-        .get()
-rootProject.layout.buildDirectory.value(newBuildDir)
-
-subprojects {
-    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
-    project.layout.buildDirectory.value(newSubprojectBuildDir)
+flutter {
+    source = "../.."
 }
 
-subprojects {
-    project.evaluationDependsOn(":app")
-}
+dependencies {
+    // Import the Firebase BoM (Bill of Materials) for version management
+    implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
 
-tasks.register<Delete>("clean") {
-    delete(rootProject.layout.buildDirectory)
+    // Firebase Authentication for Phone OTP login logic
+    implementation("com.google.firebase:firebase-auth")      
+    
+    // Cloud Firestore to store user profiles and Minggle app data
+    implementation("com.google.firebase:firebase-firestore") 
 }
