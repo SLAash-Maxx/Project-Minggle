@@ -39,6 +39,24 @@ class _LoginPageState extends State<LoginPage> {
     String phoneNumber = _phoneController.text.trim();
 
     if (phoneNumber.isNotEmpty) {
+      // Validate that the number starts with '+' for full international routing
+      if (!phoneNumber.startsWith('+')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("Please start with a country code (e.g., +94 or +1)")),
+        );
+        return;
+      }
+
+      // Check for valid international phone bounds (minimum 8, maximum 15 characters typically)
+      if (phoneNumber.length < 8 || phoneNumber.length > 16) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("Please enter a valid complete phone number length")),
+        );
+        return;
+      }
+
       setState(() => _isLoading = true);
 
       await _auth.verifyPhoneNumber(
