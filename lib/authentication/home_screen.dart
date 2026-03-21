@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'login_selection_screen.dart';
+import 'get_started_screen.dart';
 import 'chat_screen.dart';
 import 'liked_screen.dart';
-import 'profile_screen.dart';
-import 'user_detail_screen.dart';
+import 'profile_screen.dart'; // Ensure this matches your filename
 
 class UserProfile {
   final String id;
@@ -140,10 +139,10 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.pop(context);
               await FirebaseAuth.instance.signOut();
               await GoogleSignIn().signOut();
-              if (mounted) {
+              if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
-                      builder: (context) => const LoginSelectionScreen()),
+                      builder: (context) => const GetStartedScreen()),
                   (route) => false,
                 );
               }
@@ -203,11 +202,48 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildDiscoverPage() {
-    return PageView.builder(
-      controller: _pageController,
-      scrollDirection: Axis.vertical,
-      itemCount: discoveryProfiles.length,
-      itemBuilder: (context, index) => _buildUserCard(discoveryProfiles[index]),
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('users').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFFF4D6D)));
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Text("No more profiles near you!", style: TextStyle(color: Colors.white)),
+          );
+        }
+
+        // Simple filtering: exclude self
+        var profiles = snapshot.data!.docs
+            .where((doc) => doc.id != currentUserId)
+            .toList();
+
+        if (profiles.isEmpty) {
+          return const Center(
+            child: Text("No matches found locally.", style: TextStyle(color: Colors.white70)),
+          );
+        }
+
+        return PageView.builder(
+          controller: _pageController,
+          scrollDirection: Axis.vertical,
+          itemCount: profiles.length,
+          itemBuilder: (context, index) {
+            var data = profiles[index].data() as Map<String, dynamic>;
+            var user = UserProfile(
+              id: profiles[index].id,
+              name: data['name'] ?? "User",
+              age: 23, // Dynamic age can be parsed from birthday later
+              bio: data['bio'] ?? "Looking for a meaningful connection ✨",
+              imageUrl: data['profilePic'] ?? "https://via.placeholder.com/150",
+              location: data['location'] ?? "Sri Lanka",
+            );
+            return _buildUserCard(user);
+          },
+        );
+      },
     );
   }
 
@@ -217,53 +253,43 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           Expanded(
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => UserDetailScreen(user: user),
-                  ),
-                );
-              },
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(25),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    CachedNetworkImage(
-                        imageUrl: user.imageUrl, fit: BoxFit.cover),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.8)
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 20,
-                      left: 20,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("${user.name}, ${user.age}",
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold)),
-                          Text(user.location,
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 16)),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(25),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CachedNetworkImage(
+                      imageUrl: user.imageUrl, fit: BoxFit.cover),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.8)
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  Positioned(
+                    bottom: 20,
+                    left: 20,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("${user.name}, ${user.age}",
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold)),
+                        Text(user.location,
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 16)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
