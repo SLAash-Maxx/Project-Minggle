@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'birthday_screen.dart'; // We will create this next
+import 'birthday_screen.dart';
 
 class NameScreen extends StatefulWidget {
   const NameScreen({super.key});
