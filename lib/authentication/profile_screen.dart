@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'get_started_screen.dart';
+import 'login_selection_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -42,7 +42,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
-                      builder: (context) => const GetStartedScreen()),
+                      builder: (context) => const LoginSelectionScreen()),
                   (route) => false,
                 );
               }
@@ -122,7 +122,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     .doc(userId)
                     .update({'bio': bioController.text});
                 if (context.mounted) {
-                  Navigator.pop(context); // Close the sheet after saving
+                  Navigator.pop(context);
                 }
               },
               child: const Text("Save",
@@ -726,20 +726,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           var userData = snapshot.data?.data() as Map<String, dynamic>? ?? {};
 
-          // These fetch from what user entered in Sign Up / Profile
           String name = userData['name'] ?? "User";
           String pic =
               userData['profilePic'] ?? "https://via.placeholder.com/150";
           String bio = userData['bio'] ?? "Available";
           String location = userData['location'] ?? "Sri Lanka";
 
-          // Fetch hobbies from Firestore (Ensure they are saved as a List)
           dynamic hobbiesData = userData['hobbies'];
           List<dynamic> hobbies = (hobbiesData is List)
               ? hobbiesData
               : ['Music', 'Travel', 'Coding'];
 
-          // Geo blocking zones from Firestore
           List<Map<String, dynamic>> geoZones =
               _getGeoZones(userData['geoBlockingZones']);
 
@@ -864,8 +861,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton.icon(
-                    onPressed: () =>
-                        _showLogoutDialog(context), // Confirmation dialog
+                    onPressed: () => _showLogoutDialog(context),
                     icon: const Icon(Icons.logout, color: Colors.white),
                     label: const Text("Logout",
                         style: TextStyle(
