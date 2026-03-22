@@ -143,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
                       builder: (context) =>
-                          const LoginSelectionScreen()), // මෙතන විතරක් වෙනස් කළා
+                          const LoginSelectionScreen()),
                   (route) => false,
                 );
               }
