@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'get_started_screen.dart';
+import 'login_selection_screen.dart';
 import 'chat_screen.dart';
 import 'liked_screen.dart';
-import 'profile_screen.dart'; // Ensure this matches your filename
+import 'profile_screen.dart';
 
 class UserProfile {
   final String id;
@@ -142,7 +142,8 @@ class _HomeScreenState extends State<HomeScreen> {
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
-                      builder: (context) => const GetStartedScreen()),
+                      builder: (context) =>
+                          const LoginSelectionScreen()), // මෙතන විතරක් වෙනස් කළා
                   (route) => false,
                 );
               }
@@ -206,23 +207,25 @@ class _HomeScreenState extends State<HomeScreen> {
       stream: FirebaseFirestore.instance.collection('users').snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFFFF4D6D)));
+          return const Center(
+              child: CircularProgressIndicator(color: Color(0xFFFF4D6D)));
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(
-            child: Text("No more profiles near you!", style: TextStyle(color: Colors.white)),
+            child: Text("No more profiles near you!",
+                style: TextStyle(color: Colors.white)),
           );
         }
 
-        // Simple filtering: exclude self
         var profiles = snapshot.data!.docs
             .where((doc) => doc.id != currentUserId)
             .toList();
 
         if (profiles.isEmpty) {
           return const Center(
-            child: Text("No matches found locally.", style: TextStyle(color: Colors.white70)),
+            child: Text("No matches found locally.",
+                style: TextStyle(color: Colors.white70)),
           );
         }
 
@@ -235,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
             var user = UserProfile(
               id: profiles[index].id,
               name: data['name'] ?? "User",
-              age: 23, // Dynamic age can be parsed from birthday later
+              age: 23,
               bio: data['bio'] ?? "Looking for a meaningful connection ✨",
               imageUrl: data['profilePic'] ?? "https://via.placeholder.com/150",
               location: data['location'] ?? "Sri Lanka",
