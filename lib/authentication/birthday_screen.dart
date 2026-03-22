@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'gender_screen.dart'; // Import the next screen
+import 'gender_screen.dart';
 
 class BirthdayScreen extends StatefulWidget {
   const BirthdayScreen({super.key});
