@@ -176,4 +176,3 @@ class _HobbiesScreenState extends State<HobbiesScreen> {
     );
   }
 }
-
